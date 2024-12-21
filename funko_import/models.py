@@ -1,6 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-class usuario(models.Model):
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+
+class Usuario(models.Model):
     idUsuario= models.BigAutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
@@ -13,7 +17,7 @@ class usuario(models.Model):
         return f'{self.idUsuario} - {self.nombre}'
 
 
-class coleccion(models.Model):
+class Coleccion(models.Model):
     idColeccion = models.BigAutoField(primary_key=True)
     nombre = models.CharField(max_length=100) 
 
@@ -22,8 +26,8 @@ class coleccion(models.Model):
  
 class carrito(models.Model):
     idCarrito = models.BigAutoField(primary_key=True)
-    total = models.FloatField()
-    idUsuario = models.ForeignKey(usuario, on_delete=models.CASCADE)
+    total = models.FloatField(validators=[MinValueValidator(0)])
+    idUsuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.idCarrito} - {self.total}'
@@ -32,8 +36,8 @@ class Descuento(models.Model):
     idDescuento = models.AutoField(primary_key=True)
     codigoDescuento = models.CharField(max_length=50, unique=True)
     fechaInicio = models.DateField()
-    fechaFin = models.DateField()
-    porcentaje = models.DecimalField(max_digits=5, decimal_places=2)
+    fechaFin = models.DateField() 
+    porcentaje = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0), MaxValueValidator(100)]) 
 
     def __str__(self):
         return self.codigoDescuento
@@ -46,10 +50,10 @@ class Producto(models.Model):
     esEspecial = models.BooleanField(default=False)
     descripcion = models.CharField(max_length=255)
     brilla = models.BooleanField(default=False)
-    precio = models.DecimalField(max_digits=10, decimal_places=2, )
-    cantidadDisp = models.IntegerField()
+    precio = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)]) #! agregar en forms
+    cantidadDisp = models.IntegerField(validators=[MinValueValidator(0)])  #! agregar en forms
     URLImagen = models.CharField(max_length=2083)
-    idColeccion = models.ForeignKey(coleccion, on_delete=models.CASCADE)
+    idColeccion = models.ForeignKey(Coleccion, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.nombre
@@ -57,9 +61,9 @@ class Producto(models.Model):
 
 class Promocion(models.Model):
     id_promocion = models.AutoField(primary_key=True)
-    porcentaje = models.DecimalField(max_digits=5, decimal_places=2)
+    porcentaje = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0), MaxValueValidator(100)]) #! agregar en forms
     fecha_inicio = models.DateField()
-    fecha_fin = models.DateField()
+    fecha_fin = models.DateField() 
     id_producto = models.ForeignKey('Producto', on_delete=models.CASCADE)
 
     def __str__(self):
@@ -67,7 +71,7 @@ class Promocion(models.Model):
 
 class IngresoStock(models.Model):
     idStock = models.AutoField(primary_key=True)
-    cantidadIngresa = models.IntegerField()
+    cantidadIngresa = models.IntegerField( validators=[MinValueValidator(1)]) #! agregar en forms
     idProducto = models.ForeignKey(Producto, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -78,15 +82,18 @@ class PeticionProducto(models.Model):
     peticion = models.TextField(max_length=500)
     correo = models.EmailField(max_length=255)
     telefono = models.CharField(max_length=15)
-    fecha_pedido = models.DateField()
-    id_usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE)
+    fechapedido = models.DateField()
+    id_Usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE)
 
-    def __str__(self):
-        return f'Peticion {self.id_peticion} - {self.correo}'
+    def clean(self):
+        if self.fechapedido <= timezone.now().date():
+            raise ValidationError("La fecha del pedido debe ser posterior a la fecha actual.")
+        
+        super().clean()
 
 class ResenaComentario(models.Model):
     idResenaComentario = models.AutoField(primary_key=True)
-    resena = models.IntegerField()
+    resena = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     comentario = models.CharField(max_length=500)
     idUsuario = models.ForeignKey('Usuario', on_delete=models.CASCADE)
     idProducto = models.ForeignKey('Producto', on_delete=models.CASCADE)
@@ -99,7 +106,7 @@ class Pregunta(models.Model):
     pregunta = models.TextField(max_length=255)
     respuesta = models.TextField(max_length=255, null=True)
     id_producto = models.ForeignKey('Producto', on_delete=models.CASCADE)
-    id_usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE)
+    id_Usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE)
 
     def __str__(self):
         return f'Pregunta {self.id_pregunta} - {self.pregunta}'
@@ -114,17 +121,17 @@ class CarritoDescuento(models.Model):
 
 class Factura(models.Model):
     id_factura = models.AutoField(primary_key=True)
-    pago_total = models.DecimalField(max_digits=10, decimal_places=2)
+    pago_total = models.DecimalField(max_digits=10, decimal_places=2,validators=[MinValueValidator(0)])
     forma_pago = models.CharField(max_length=50)
     fecha_venta = models.DateField()
-    id_usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE)
+    id_Usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE)
 
     def __str__(self):
         return f'Factura {self.id_factura} - {self.fecha_venta}'
 
 class LineaFactura(models.Model):
     idLineaFactura = models.AutoField(primary_key=True)
-    cantidad = models.IntegerField()
+    cantidad = models.IntegerField(validators=[MinValueValidator(1)])
     idProducto = models.ForeignKey('Producto', on_delete=models.CASCADE)    
     idFactura = models.ForeignKey('Factura', on_delete=models.CASCADE)
 
@@ -141,8 +148,8 @@ class FacturaDescuento(models.Model):
 
 class ProductoCarrito(models.Model):
     id_producto_carrito = models.AutoField(primary_key=True)
-    cantidad = models.IntegerField()
-    precio = models.DecimalField(max_digits=10, decimal_places=2)
+    cantidad = models.IntegerField(validators=[MinValueValidator(1)])
+    precio = models.DecimalField(max_digits=10, decimal_places=2,validators=[MinValueValidator(0)])
     id_producto = models.ForeignKey('Producto', on_delete=models.CASCADE)
     id_carrito = models.ForeignKey('Carrito', on_delete=models.CASCADE)
 
