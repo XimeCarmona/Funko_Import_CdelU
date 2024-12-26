@@ -1,5 +1,5 @@
 from django import forms
-from models import Usuario, Coleccion, Descuento, Producto, Promocion, IngresoStock, PeticionProducto, ResenaComentario, Pregunta 
+from .models import Usuario, Coleccion, Descuento, Producto, Promocion, IngresoStock, PeticionProducto, ResenaComentario, Pregunta 
 from django.core.exceptions import ValidationError
 
 class UsuarioForm(forms.ModelForm):
@@ -15,12 +15,12 @@ class ColeccionForm(forms.ModelForm):
 class DescuentoForm(forms.ModelForm):
     class Meta:
         model = Descuento
-        fields = ['codigoDescuento', 'fechaInicio', 'fechaFin', 'porcentaje','id_producto']
+        fields = ['codigoDescuento', 'fechaInicio', 'fechaFin', 'porcentaje']
         widgets = { 
-            'id_producto': forms.Select(attrs={'class': 'form-control'}),
             'fechaInicio': forms.DateInput(attrs={'type': 'date'}),
             'fechaFin': forms.DateInput(attrs={'type': 'date'}),
             }
+        
     def clean(self):
         cleaned_data = super().clean()
         fecha_inicio = cleaned_data.get('fecha_inicio')
@@ -79,11 +79,13 @@ class promocionForm(forms.ModelForm):
 class IngresoStockForm(forms.ModelForm):
     class Meta:
         model = IngresoStock
-        fields = [ 'cantidad', 'idProducto' ]
+        fields = [ 'cantidadIngresa', 'idProducto' ]
         widgets = { 
             'idProducto': forms.Select(attrs={'class': 'form-control'}),
+            'cantidadIngresa': forms.NumberInput(attrs={'class': 'form-control'}),
             }
     def clean(self):
+        
         cleaned_data = super().clean()
         cantidad = cleaned_data.get('cantidad')
 

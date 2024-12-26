@@ -4,7 +4,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-class Usuario(models.Model):
+class Usuario(models.Model):  #!CRUD
     idUsuario= models.BigAutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
@@ -17,14 +17,14 @@ class Usuario(models.Model):
         return f'{self.idUsuario} - {self.nombre}'
 
 
-class Coleccion(models.Model):
+class Coleccion(models.Model): #!CRUD
     idColeccion = models.BigAutoField(primary_key=True)
     nombre = models.CharField(max_length=100) 
 
     def __str__(self):
         return self.nombre
  
-class carrito(models.Model):
+class carrito(models.Model): #!CRUD
     idCarrito = models.BigAutoField(primary_key=True)
     total = models.FloatField(validators=[MinValueValidator(0)])
     idUsuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
@@ -32,17 +32,17 @@ class carrito(models.Model):
     def __str__(self):
         return f'{self.idCarrito} - {self.total}'
 
-class Descuento(models.Model):
+class Descuento(models.Model): #!CRUD
     idDescuento = models.AutoField(primary_key=True)
     codigoDescuento = models.CharField(max_length=50, unique=True)
     fechaInicio = models.DateField()
     fechaFin = models.DateField() 
-    porcentaje = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0), MaxValueValidator(100)]) 
-
+    porcentaje = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0), MaxValueValidator(1)]) 
+    
     def __str__(self):
         return self.codigoDescuento
     
-class Producto(models.Model):
+class Producto(models.Model): #!CRUD
     idProducto = models.BigAutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
     numero = models.IntegerField()
@@ -51,17 +51,16 @@ class Producto(models.Model):
     descripcion = models.CharField(max_length=255)
     brilla = models.BooleanField(default=False)
     precio = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)]) #! agregar en forms
-    cantidadDisp = models.IntegerField(validators=[MinValueValidator(0)])  #! agregar en forms
+    cantidadDisp = models.IntegerField(validators=[MinValueValidator(0)])  
     URLImagen = models.CharField(max_length=2083)
     idColeccion = models.ForeignKey(Coleccion, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.nombre
 
-
-class Promocion(models.Model):
+class Promocion(models.Model): #!CRUD
     id_promocion = models.AutoField(primary_key=True)
-    porcentaje = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0), MaxValueValidator(100)]) #! agregar en forms
+    porcentaje = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0), MaxValueValidator(1)]) #! agregar en forms
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField() 
     id_producto = models.ForeignKey('Producto', on_delete=models.CASCADE)
@@ -71,7 +70,7 @@ class Promocion(models.Model):
 
 class IngresoStock(models.Model):
     idStock = models.AutoField(primary_key=True)
-    cantidadIngresa = models.IntegerField( validators=[MinValueValidator(1)]) #! agregar en forms
+    cantidadIngresa = models.IntegerField( validators=[MinValueValidator(1)])
     idProducto = models.ForeignKey(Producto, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -91,7 +90,7 @@ class PeticionProducto(models.Model):
         
         super().clean()
 
-class ResenaComentario(models.Model):
+class ResenaComentario(models.Model): #!CRUD
     idResenaComentario = models.AutoField(primary_key=True)
     resena = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     comentario = models.CharField(max_length=500)
@@ -101,7 +100,7 @@ class ResenaComentario(models.Model):
     def __str__(self):
         return f'Reseña {self.idResenaComentario} - {self.resena}'
 
-class Pregunta(models.Model):
+class Pregunta(models.Model): #!CRUD
     id_pregunta = models.AutoField(primary_key=True)
     pregunta = models.TextField(max_length=255)
     respuesta = models.TextField(max_length=255, null=True)
@@ -156,7 +155,7 @@ class ProductoCarrito(models.Model):
     def __str__(self):
         return f'Producto Carrito {self.id_producto_carrito} - {self.cantidad} x {self.precio}'
 
-class CodigoSeguimiento(models.Model):
+class CodigoSeguimiento(models.Model): #?CRUD despues vemos
     codigo = models.CharField(max_length=50, unique=True)
     idFactura = models.ForeignKey('Factura', on_delete=models.CASCADE)
 

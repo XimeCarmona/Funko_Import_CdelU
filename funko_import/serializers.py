@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from models import (
-    Usuario, Coleccion, Carrito, Descuento, Producto, Promocion, IngresoStock, 
+from .models import (
+    Usuario, Coleccion, carrito, Descuento, Producto, Promocion, IngresoStock, 
     PeticionProducto, ResenaComentario, Pregunta, CarritoDescuento, Factura, 
     LineaFactura, FacturaDescuento, ProductoCarrito, CodigoSeguimiento
 )
@@ -17,7 +17,7 @@ class ColeccionSerializer(serializers.ModelSerializer):
 
 class CarritoSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Carrito
+        model = carrito
         fields = '__all__'
 
 class DescuentoSerializer(serializers.ModelSerializer):
