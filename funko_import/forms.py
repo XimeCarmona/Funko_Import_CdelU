@@ -1,6 +1,7 @@
 from django import forms
 from .models import Usuario, Coleccion, Descuento, Producto, Promocion, IngresoStock, PeticionProducto, ResenaComentario, Pregunta 
 from django.core.exceptions import ValidationError
+from datetime import datetime
 
 class UsuarioForm(forms.ModelForm):
     class Meta:
@@ -27,13 +28,17 @@ class DescuentoForm(forms.ModelForm):
         fecha_fin = cleaned_data.get('fecha_fin')
         porcentaje = cleaned_data.get('porcentaje')
 
-        if fecha_inicio and fecha_fin:
+        if fecha_inicio and fecha_fin: 
             if fecha_inicio > fecha_fin:
-                raise ValidationError('La fecha de inicio no puede ser mayor que la fecha de fin.')
+                raise ValidationError('La fecha de inicio no puede ser mayor que la fecha de fin.') #hacer procedimiento porque se repite en promocion
+            elif fecha_inicio < datetime.now().date():
+                raise ValidationError('La fecha de inicio no puede ser menor a la fecha actual.')
+            elif fecha_fin < datetime.now().date():
+                raise ValidationError('La fecha de fin no puede ser menor a la fecha actual.')
 
         if porcentaje is not None:  
-            if porcentaje < 0 or porcentaje > 100:
-                raise ValidationError('El porcentaje debe estar entre 0 y 100.')
+            if porcentaje < 0 or porcentaje > 1:
+                raise ValidationError('El porcentaje debe estar entre 0 y 1.')
         return cleaned_data
     
 
@@ -69,10 +74,19 @@ class promocionForm(forms.ModelForm):
         cleaned_data = super().clean()
         fecha_inicio = cleaned_data.get('fecha_inicio')
         fecha_fin = cleaned_data.get('fecha_fin')
+        porcentaje = cleaned_data.get('porcentaje')
 
         if fecha_inicio and fecha_fin:
             if fecha_inicio > fecha_fin:
                 raise ValidationError('La fecha de inicio no puede ser mayor que la fecha de fin.')
+            elif fecha_inicio < datetime.now().date():
+                raise ValidationError('La fecha de inicio no puede ser menor a la fecha actual.')
+            elif fecha_fin < datetime.now().date():
+                raise ValidationError('La fecha de fin no puede ser menor a la fecha actual.')
+
+        if porcentaje is not None:
+            if porcentaje < 0 or porcentaje > 1:
+                raise ValidationError('El porcentaje debe estar entre 0 y 1.')
 
         return cleaned_data
     
@@ -94,7 +108,6 @@ class IngresoStockForm(forms.ModelForm):
                 raise ValidationError('Para ingresar stock, la cantidad debe ser igual o mayor a 1.')
 
         return cleaned_data
-    
 
 class PeticionProductoForm(forms.ModelForm):
     class Meta:

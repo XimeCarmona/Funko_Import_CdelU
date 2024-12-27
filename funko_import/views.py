@@ -83,3 +83,36 @@ def getPreguntas(request):
     serializer = PreguntaSerializer(preguntas, many=True)
     return JsonResponse(serializer.data, safe=False)
 
+#REST
+def UsuariosRest (request):
+    usuario=getUsuarios()
+    return JsonResponse(usuario)
+
+def ColeccionesRest (request):
+    coleccion=getColecciones()
+    return JsonResponse(coleccion)
+
+def CarritosRest (request):
+    carrito=getCarritos()
+    return JsonResponse(carrito)
+
+def DescuentosRest (request):
+    descuento=getDescuentos()
+    return JsonResponse(descuento)
+
+def ProductosRest (request):
+    producto=getProductos()
+    return JsonResponse(producto)
+
+def PromocionesRest (request):
+    promocion=getPromociones()
+    return JsonResponse(promocion)
+
+def ResenasComentariosRest (request):
+    resenaComentario=getResenasComentarios()
+    return JsonResponse(resenaComentario)
+
+def PreguntasRest (request):
+    pregunta=getPreguntas()
+    return JsonResponse(pregunta)
+

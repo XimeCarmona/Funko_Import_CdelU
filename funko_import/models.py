@@ -4,7 +4,9 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-class Usuario(models.Model):  #!CRUD
+
+# Obtener nombre y apellido concatenados
+class Usuario(models.Model):  #!CRUD 
     idUsuario= models.BigAutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
@@ -16,7 +18,7 @@ class Usuario(models.Model):  #!CRUD
     def __str__(self):
         return f'{self.idUsuario} - {self.nombre}'
 
-
+#Que no haya mas de 2 colecciones con el mismo nombre
 class Coleccion(models.Model): #!CRUD
     idColeccion = models.BigAutoField(primary_key=True)
     nombre = models.CharField(max_length=100) 
@@ -24,6 +26,9 @@ class Coleccion(models.Model): #!CRUD
     def __str__(self):
         return self.nombre
  
+
+#calcular el total del carrito
+#que no haya mas de 2 carritos con el mismo usuario
 class carrito(models.Model): #!CRUD
     idCarrito = models.BigAutoField(primary_key=True)
     total = models.FloatField(validators=[MinValueValidator(0)])
@@ -32,6 +37,10 @@ class carrito(models.Model): #!CRUD
     def __str__(self):
         return f'{self.idCarrito} - {self.total}'
 
+#Generar automaricamente codigos de descuento
+#Que el descuento se aplique al carrito y cuando termine la validez del descuento vuelva al precio original
+#Que no haya mas de 2 descuentos al mismo carrito
+#Que todos los codigos de descuento sean distintos
 class Descuento(models.Model): #!CRUD
     idDescuento = models.AutoField(primary_key=True)
     codigoDescuento = models.CharField(max_length=50, unique=True)
@@ -42,11 +51,13 @@ class Descuento(models.Model): #!CRUD
     def __str__(self):
         return self.codigoDescuento
     
+ #que 2 productos no tengan el mismo numero si pertenecen a la misma coleccion
+ #reducir stock al hacer compra
 class Producto(models.Model): #!CRUD
     idProducto = models.BigAutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
-    numero = models.IntegerField()
-    nombreEdicion = models.CharField(max_length=100)
+    numero = models.IntegerField(validators=[MinValueValidator(1)])
+    nombreEdicion = models.CharField(max_length=100, null=True)
     esEspecial = models.BooleanField(default=False)
     descripcion = models.CharField(max_length=255)
     brilla = models.BooleanField(default=False)
@@ -58,6 +69,8 @@ class Producto(models.Model): #!CRUD
     def __str__(self):
         return self.nombre
 
+#que se aplique la promocion al precio del producto y cuando termine la promocion vuelva al precio original
+#Que no haya mas de 2 promociones activas al mismo producto al mismo tiempo
 class Promocion(models.Model): #!CRUD
     id_promocion = models.AutoField(primary_key=True)
     porcentaje = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0), MaxValueValidator(1)]) #! agregar en forms
@@ -68,6 +81,7 @@ class Promocion(models.Model): #!CRUD
     def __str__(self):
         return f'Promocion {self.id_promocion} - {self.porcentaje}%'
 
+#Actualizar stock de producto ingresado
 class IngresoStock(models.Model):
     idStock = models.AutoField(primary_key=True)
     cantidadIngresa = models.IntegerField( validators=[MinValueValidator(1)])
@@ -75,6 +89,7 @@ class IngresoStock(models.Model):
 
     def __str__(self):
         return f'Ingreso de stock {self.idStock} - {self.cantidadIngresa}'
+
 
 class PeticionProducto(models.Model):
     id_peticion = models.AutoField(primary_key=True)
@@ -90,6 +105,8 @@ class PeticionProducto(models.Model):
         
         super().clean()
 
+#Al poner una reseña y comentario se tiene que verificar si el usuario compro el producto y si no hizo ya una reseña
+#Para ese producto
 class ResenaComentario(models.Model): #!CRUD
     idResenaComentario = models.AutoField(primary_key=True)
     resena = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
@@ -99,6 +116,7 @@ class ResenaComentario(models.Model): #!CRUD
 
     def __str__(self):
         return f'Reseña {self.idResenaComentario} - {self.resena}'
+
 
 class Pregunta(models.Model): #!CRUD
     id_pregunta = models.AutoField(primary_key=True)
@@ -118,10 +136,11 @@ class CarritoDescuento(models.Model):
     def __str__(self):
         return f'CarritoDescuento {self.idCarritoDescuento} - {self.idCarrito} - {self.idDescuento}'
 
+#generar total en al factura
 class Factura(models.Model):
     id_factura = models.AutoField(primary_key=True)
     pago_total = models.DecimalField(max_digits=10, decimal_places=2,validators=[MinValueValidator(0)])
-    forma_pago = models.CharField(max_length=50)
+    forma_pago = models.CharField(max_length=50) #!INUTIL
     fecha_venta = models.DateField()
     id_Usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE)
 
@@ -145,6 +164,7 @@ class FacturaDescuento(models.Model):
     def __str__(self):
         return f'FacturaDescuento {self.idFacturaDescuento} - {self.idDescuento} - {self.idFactura}'
 
+#verificar que no esta el producto 2 veces para el mismo carrito
 class ProductoCarrito(models.Model):
     id_producto_carrito = models.AutoField(primary_key=True)
     cantidad = models.IntegerField(validators=[MinValueValidator(1)])
