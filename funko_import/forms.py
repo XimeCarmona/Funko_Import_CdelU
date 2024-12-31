@@ -21,6 +21,11 @@ class DescuentoForm(forms.ModelForm):
             'fechaInicio': forms.DateInput(attrs={'type': 'date'}),
             'fechaFin': forms.DateInput(attrs={'type': 'date'}),
             }
+    
+        def save(self, commit=True, *args, **kwargs): #! para intentar el generar codigo en el /admin pero no funca
+            if not self.instance.codigoDescuento:
+                self.instance.codigoDescuento = self.instance.generar_codigo()
+            return super().save(commit=commit, *args, **kwargs)
         
     def clean(self):
         cleaned_data = super().clean()
