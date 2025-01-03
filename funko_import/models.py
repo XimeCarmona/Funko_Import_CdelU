@@ -89,11 +89,13 @@ class Descuento(models.Model): #!CRUD
     
     def clean(self):
         super().clean()
-        if Coleccion.objects.exclude(idDescuento=self.idDescuento).filter(codigoDescuento=self.codigoDescuento).exists():
-            raise ValidationError({'nombre': 'Ya existe este codigo de descuento.'})
+        # Validar que no existan códigos de descuento duplicados en el modelo Descuento
+        if Descuento.objects.exclude(pk=self.pk).filter(codigoDescuento=self.codigoDescuento).exists():
+            raise ValidationError({'codigoDescuento': 'Ya existe un descuento con este código.'})
+
 
     def generar_codigo(self):
-        longitud_codigo = 10  # Longitud del código
+        longitud_codigo = 20  # Longitud del código
         caracteres = string.ascii_uppercase + string.digits
         while True:
             nuevo_codigo = ''.join(random.choices(caracteres, k=longitud_codigo))
