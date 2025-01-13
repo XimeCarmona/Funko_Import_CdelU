@@ -4,8 +4,6 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-#hola
-
 import string
 import random
 
@@ -75,7 +73,7 @@ class carrito(models.Model): #!CRUD
     def __str__(self):
         return f'{self.idCarrito} - {self.total}'
 
-#?Generar automaricamente codigos de descuento
+#!Generar automaricamente codigos de descuento
 #Que el descuento se aplique al carrito y cuando termine la validez del descuento vuelva al precio original
 #!Que no haya mas de 2 descuentos al mismo carrito (echo en carritoDescuento)
 #!Que todos los codigos de descuento sean distintos
@@ -229,15 +227,6 @@ class LineaFactura(models.Model):
     idProducto = models.ForeignKey('Producto', on_delete=models.CASCADE)    
     idFactura = models.ForeignKey('Factura', on_delete=models.CASCADE)
 
-    def save(self, *args, **kwargs):
-        if self.idProducto.cantidadDisp < self.cantidad:
-            raise ValidationError(f"No hay suficiente stock disponible para el producto {self.idProducto.nombre}.")
-        
-        self.idProducto.cantidadDisp -= self.cantidad
-        self.idProducto.save()
-        
-        super().save(*args, **kwargs)
-
     def __str__(self):
         return f'LineaFactura {self.idLineaFactura} - {self.cantidad}'
 
@@ -265,5 +254,3 @@ class CodigoSeguimiento(models.Model): #?CRUD despues vemos
 
     def __str__(self):
         return f'Codigo Seguimiento {self.codigo} - {self.idFactura}'
-
-

@@ -1,0 +1,30 @@
+[
+    {
+      "id": 1,
+      "funkoId": 1,
+      "autor": "Juan Pérez",
+      "texto": "Excelente calidad, detalles increíbles.",
+      "rating": 5
+    },
+    {
+      "id": 2,
+      "funkoId": 1,
+      "autor": "María López",
+      "texto": "Me encantó, lo recomiendo.",
+      "rating": 4
+    },
+    {
+      "id": 3,
+      "funkoId": 2,
+      "autor": "Carlos Ramírez",
+      "texto": "Un poco caro, pero vale la pena.",
+      "rating": 4
+    },
+    {
+      "id": 4,
+      "funkoId": 3,
+      "autor": "Ana García",
+      "texto": "El producto llegó dañado.",
+      "rating": 2
+    }
+  ]

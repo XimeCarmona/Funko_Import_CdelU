@@ -1,0 +1,101 @@
+[
+    {
+      "id": 1,
+      "name": "Funko Pop: Spider-Man",
+      "price": 19.99,
+      "image": "https://via.placeholder.com/150",
+      "description": "Figura de colección de Spider-Man.",
+      "category": "Marvel",
+      "stock": 25,
+      "releaseYear": 2021,
+      "exclusive": false
+    },
+    {
+      "id": 2,
+      "name": "Funko Pop: Iron Man",
+      "price": 22.50,
+      "image": "https://via.placeholder.com/150",
+      "description": "Figura de colección de Iron Man.",
+      "category": "Marvel",
+      "stock": 30,
+      "releaseYear": 2020,
+      "exclusive": true
+    },
+    {
+      "id": 3,
+      "name": "Funko Pop: Batman",
+      "price": 18.75,
+      "image": "https://via.placeholder.com/150",
+      "description": "Figura de colección de Batman.",
+      "category": "DC Comics",
+      "stock": 15,
+      "releaseYear": 2019,
+      "exclusive": false
+    },
+    {
+      "id": 4,
+      "name": "Funko Pop: Lionel Messi",
+      "price": 50.25,
+      "image": "https://via.placeholder.com/150",
+      "description": "Figura de colección del jugador número uno del mundo.",
+      "category": "Deportes",
+      "stock": 10,
+      "releaseYear": 2023,
+      "exclusive": true
+    },
+    {
+      "id": 5,
+      "name": "Funko Pop: Harry Potter",
+      "price": 15.10,
+      "image": "https://via.placeholder.com/150",
+      "description": "Figura de colección de Harry Potter.",
+      "category": "Películas",
+      "stock": 40,
+      "releaseYear": 2021,
+      "exclusive": false
+    },
+    {
+      "id": 6,
+      "name": "Funko Pop: Yoda",
+      "price": 10.75,
+      "image": "https://via.placeholder.com/150",
+      "description": "Figura de colección de Yoda.",
+      "category": "Star Wars",
+      "stock": 35,
+      "releaseYear": 2018,
+      "exclusive": false
+    },
+    {
+      "id": 7,
+      "name": "Funko Pop: Sonic",
+      "price": 19.30,
+      "image": "https://via.placeholder.com/150",
+      "description": "Figura de colección de Sonic.",
+      "category": "Videojuegos",
+      "stock": 20,
+      "releaseYear": 2022,
+      "exclusive": false
+    }, 
+    {
+      "id": 8,
+      "name": "Funko Pop: Capitana Marvel",
+      "price": 15.10,
+      "image": "https://via.placeholder.com/150",
+      "description": "Figura de colección de Capitana Marvel.",
+      "category": "Marvel",
+      "stock": 50,
+      "releaseYear": 2021,
+      "exclusive": false
+    },
+    {
+      "id": 9,
+      "name": "Funko Pop: Capitana Marvel",
+      "price": 18.75,
+      "image": "https://via.placeholder.com/150",
+      "description": "Figura de colección de Capitana Marvel.",
+      "category": "Marvel",
+      "stock": 15,
+      "releaseYear": 2022,
+      "exclusive": true
+    }
+  ]
