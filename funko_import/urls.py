@@ -3,6 +3,8 @@ from rest_framework import routers
 from . import views
 
 router = routers.DefaultRouter()
+# router.register(r'Coleccion', views.ColeccionView, 'Coleccion')
+
 router.register(r'Usuario', views.UsuarioView, 'Usuario')
 router.register(r'Coleccion', views.ColeccionView, 'Coleccion')
 router.register(r'Carrito', views.CarritoView, 'Carrito')
@@ -13,5 +15,5 @@ router.register(r'resenaComentario', views.resenaComentarioView, 'resenaComentar
 router.register(r'pregunta', views.preguntaView, 'Pregunta')
 
 urlpatterns = [
-    path('api', include(router.urls))
+    path('api/', include(router.urls))
 ]

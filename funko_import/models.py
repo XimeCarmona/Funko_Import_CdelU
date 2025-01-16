@@ -3,10 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-<<<<<<< HEAD
 
-=======
->>>>>>> fd8f89a5c070c8b559d68dc10b87136b4a1583dd
 import string
 import random
 
@@ -333,10 +330,6 @@ class CodigoSeguimiento(models.Model): #?CRUD despues vemos
     id_factura = models.ForeignKey('Factura', on_delete=models.CASCADE)
 
     def __str__(self):
-<<<<<<< HEAD
-        return f'Codigo Seguimiento {self.codigo} - {self.idFactura}'
-=======
         return f'Codigo Seguimiento {self.codigo} - {self.id_factura}'
 
 
->>>>>>> fd8f89a5c070c8b559d68dc10b87136b4a1583dd
