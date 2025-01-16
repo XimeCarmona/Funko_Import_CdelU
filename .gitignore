@@ -1,15 +1,13 @@
-# Ignorar archivos DLL grandes
-thomas/Lib/site-packages/clang/native/libclang.dll
+# Ignorar entornos virtuales completos
+venv/
+thomas/Lib/
+__pycache__/
 
-# Ignorar archivos PYD grandes
-thomas/Lib/site-packages/cv2/cv2.pyd
-thomas/Lib/site-packages/tensorflow/python/_pywrap_tensorflow_internal.pyd
-
-# Ignorar archivos grandes en general
+# Ignorar archivos DLL y PYD grandes
 *.dll
 *.pyd
 
-# Ignorar tensorflow
-tensorflow
-opencv-python
-clang
+# Ignorar librerías
+tensorflow/
+opencv-python/
+clang/
