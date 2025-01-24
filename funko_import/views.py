@@ -7,6 +7,10 @@ from .serializers import UsuarioSerializer, ColeccionSerializer, CarritoSerializ
 from .forms import UsuarioForm, ColeccionForm, DescuentoForm, productoForm, promocionForm, IngresoStockForm, PeticionProductoForm, ResenaComentarioForm, PreguntaForm, RespuestaForm
 from django.urls import reverse_lazy
 from rest_framework import viewsets
+import mercadopago
+from django.views.decorators.csrf import csrf_exempt
+import json
+
 # Create your views here.
 
 #CRUDS
@@ -116,3 +120,43 @@ def PreguntasRest (request):
     pregunta=getPreguntas()
     return JsonResponse(pregunta)
 
+#MercadoPago
+ACCESS_TOKEN = "token"
+
+@csrf_exempt
+def create_preference(request):
+    if request.method == "POST":
+        try:
+            # Inicializar el SDK de Mercado Pago
+            sdk = mercadopago.SDK(ACCESS_TOKEN)
+            
+            # Obtener los datos del cuerpo de la solicitud
+            body = json.loads(request.body)
+
+            # Crear preferencia de pago
+            preference_data = {
+                "items": [
+                    {
+                        "title": body["title"],  # Título del producto
+                        "quantity": int(body["quantity"]),  # Cantidad
+                        "unit_price": float(body["price"])  # Precio unitario
+                    }
+                ],
+                "back_urls": {
+                    "success": "http://localhost:3000/success",
+                    "failure": "http://localhost:3000/failure",
+                    "pending": "http://localhost:3000/pending"
+                },
+                "auto_return": "approved"  # Retornar automáticamente al success si el pago es aprobado
+            }
+
+            # Crear la preferencia en Mercado Pago
+            preference_response = sdk.preference().create(preference_data)
+            preference = preference_response["response"]
+
+            # Retornar la preferencia al cliente
+            return JsonResponse({"id": preference["id"]})
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse({"error": "Invalid request method"}, status=400)
