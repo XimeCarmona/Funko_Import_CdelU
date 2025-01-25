@@ -2,6 +2,7 @@
 venv/
 thomas/Lib/
 __pycache__/
+axel/
 
 # Ignorar archivos DLL y PYD grandes
 *.dll

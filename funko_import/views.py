@@ -121,10 +121,11 @@ def PreguntasRest (request):
     return JsonResponse(pregunta)
 
 #MercadoPago
+# Credenciales de acceso (Access Token)
 ACCESS_TOKEN = "token"
 
 @csrf_exempt
-def create_preference(request):
+def process_payment(request):
     if request.method == "POST":
         try:
             # Inicializar el SDK de Mercado Pago
@@ -133,29 +134,28 @@ def create_preference(request):
             # Obtener los datos del cuerpo de la solicitud
             body = json.loads(request.body)
 
-            # Crear preferencia de pago
-            preference_data = {
-                "items": [
-                    {
-                        "title": body["title"],  # Título del producto
-                        "quantity": int(body["quantity"]),  # Cantidad
-                        "unit_price": float(body["price"])  # Precio unitario
-                    }
-                ],
-                "back_urls": {
-                    "success": "http://localhost:3000/success",
-                    "failure": "http://localhost:3000/failure",
-                    "pending": "http://localhost:3000/pending"
-                },
-                "auto_return": "approved"  # Retornar automáticamente al success si el pago es aprobado
+            # Crear el pago
+            payment_data = {
+                "transaction_amount": float(body["transaction_amount"]),
+                "token": body["token"],
+                "description": body["description"],
+                "installments": int(body["installments"]),
+                "payment_method_id": body["payment_method_id"],
+                "payer": {
+                    "email": body["payer"]["email"]
+                }
             }
 
-            # Crear la preferencia en Mercado Pago
-            preference_response = sdk.preference().create(preference_data)
-            preference = preference_response["response"]
+            # Procesar el pago
+            payment_response = sdk.payment().create(payment_data)
+            payment = payment_response["response"]
 
-            # Retornar la preferencia al cliente
-            return JsonResponse({"id": preference["id"]})
+            # Retornar la respuesta del pago al cliente
+            return JsonResponse({
+                "status": payment.get("status"),
+                "status_detail": payment.get("status_detail"),
+                "id": payment.get("id"),
+            })
 
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
