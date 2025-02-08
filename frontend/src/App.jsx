@@ -1,18 +1,19 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import HomePage from "../src/pages/HomePage";
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
+import HomePage from "./pages/HomePage";
+//admin
 import HeaderAdmin from "./components/admin/HeaderAdmin";
-import AdminHome from "../src/pages/admin/AdminHome";
-import Productos from "../src/pages/admin/Productos";
-import Categorias from "../src/pages/admin/Categorias";
-import Pedidos from "../src/pages/admin/Pedidos";
-import Edicion from "../src/pages/admin/Edicion";
-import Perfil from "../src/pages/admin/Perfil";
-
-import UserHome from "../src/pages/user/UserHome";
-import Funko from "../src/pages/user/Funko";
-import Cart from "../src/pages/user/Cart";
-import Favorites from "../src/pages/user/Favorites";
+import AdminHome from "./pages/admin/AdminHome";
+import Productos from "./pages/admin/Productos";
+import Categorias from "./pages/admin/Categorias";
+import Pedidos from "./pages/admin/Pedidos";
+import Edicion from "./pages/admin/Edicion";
+import Perfil from "./pages/admin/Perfil";
+//user
+import UserHome from "./pages/user/UserHome";
+import Funko from "./pages/user/Funko";
+import Cart from "./pages/user/Cart";
+import Favorites from "./pages/user/Favorites";
 
 function App() {
   return (
@@ -22,10 +23,24 @@ function App() {
         <Route path="/" element={<HomePage />} />
 
         {/* Rutas del Administrador */}
-        <Route path="/admin/*" element={<AdminArea />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminHome />} />
+          <Route path="productos" element={<Productos />} />
+          <Route path="categorias" element={<Categorias />} />
+          <Route path="pedidos" element={<Pedidos />} />
+          <Route path="edicion" element={<Edicion />} />
+          <Route path="perfil" element={<Perfil />} />
+          <Route path="*" element={<Navigate to="/admin" />} />
+        </Route>
 
         {/* Rutas del Usuario */}
-        <Route path="/user/*" element={<UserArea />} />
+        <Route path="/user" element={<UserLayout />}>
+          <Route index element={<UserHome />} />
+          <Route path="funko/:id" element={<Funko />} />
+          <Route path="carrito" element={<Cart />} />
+          <Route path="favorites" element={<Favorites />} />
+          <Route path="*" element={<Navigate to="/user" />} />
+        </Route>
 
         {/* Ruta por defecto o no encontrada */}
         <Route path="*" element={<Navigate to="/" />} />
@@ -34,33 +49,24 @@ function App() {
   );
 }
 
-function AdminArea() {
+//Layout del Administrador
+function AdminLayout() {
   return (
     <div>
       <HeaderAdmin />
       <main className="main-content">
-        <Routes>
-          <Route path="/" element={<Navigate to="home" />} />
-          <Route path="home" element={<AdminHome />} />
-          <Route path="productos" element={<Productos />} />
-          <Route path="categorias" element={<Categorias />} />
-          <Route path="pedidos" element={<Pedidos />} />
-          <Route path="edicion" element={<Edicion />} />
-          <Route path="perfil" element={<Perfil />} />
-        </Routes>
+        <Outlet />
       </main>
     </div>
   );
 }
 
-function UserArea() {
+// 📌 Layout del Usuario (Corregido)
+function UserLayout() {
   return (
-    <Routes>
-      <Route path="/" element={<UserHome />} />
-      <Route path="/funko/:id" element={<Funko />} />
-      <Route path="/carrito" element={<Cart />} />
-      <Route path="/favorites" element={<Favorites />} />
-    </Routes>
+    <div>
+        <Outlet />
+    </div>
   );
 }
 

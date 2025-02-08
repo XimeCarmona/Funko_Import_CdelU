@@ -1,0 +1,61 @@
+/* 📌 Fondo y alineación general */
+.home-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #8abbe6; /* Color celeste claro */
+    text-align: center;
+  }
+  
+  /* 📌 Contenedor del logo */
+  .logo-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 20px; /* Reducido el margen para mejor proporción */
+  }
+  
+  /* 📌 Estilo del logo */
+  .logo {
+    width: 280px; /* Tamaño más equilibrado */
+  }
+  
+  /* 📌 Texto "Iniciar sesión" */
+  .login-text {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  /* 📌 Botón de Google */
+  .google-login-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 280px;
+    padding: 12px 0;
+    background-color: white;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ccc;
+    border-radius: 25px;
+    text-decoration: none;
+    color: #555;
+    font-weight: 500;
+    transition: background-color 0.2s ease-in-out;
+    cursor: pointer;
+  }
+  
+  .google-login-button:hover {
+    background-color: #f2f2f2;
+  }
+  
+  /* 📌 Icono de Google */
+  .google-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+  }
+  

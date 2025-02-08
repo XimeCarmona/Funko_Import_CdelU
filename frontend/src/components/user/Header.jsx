@@ -4,7 +4,7 @@ import logo from '../../assets/logo.png';
 
 const Header = ({ setSearchTerm }) => {
   const handleSearch = (e) => {
-    setSearchTerm(e.target.value);  // Actualizamos el término de búsqueda en tiempo real
+    setSearchTerm(e.target.value);  
   };
 
   return (
@@ -15,7 +15,7 @@ const Header = ({ setSearchTerm }) => {
           type="text"
           placeholder="Buscar productos..."
           className="search-input w-full max-w-xs p-2 rounded-md"
-          onChange={handleSearch}  // Filtrado dinámico
+          onChange={handleSearch}  
         />
         <button className="search-btn bg-blue-600 hover:bg-blue-700 text-white font-bold p-2 rounded-md">
           Buscar
@@ -33,17 +33,19 @@ const Header = ({ setSearchTerm }) => {
 
       {/* Menú y carrito */}
       <div className="menu-cart flex-1 flex justify-end space-x-4">
+        <Link to= "/user">
         <button className="menu-btn text-white font-bold">Menú</button>
+        </Link>
         
         {/* Botón Carrito */}
-        <Link to="/carrito">
+        <Link to="/user/carrito">
           <button className="cart-btn text-white font-bold">
             <i className="fas fa-shopping-cart"></i> Carrito
           </button>
         </Link>
 
         {/* Botón Favoritos */}
-        <Link to="/favorites">
+        <Link to="/user/favorites">
           <button className="cart-btn text-white font-bold">
             <i className="fas fa-heart"></i> Favoritos
           </button>

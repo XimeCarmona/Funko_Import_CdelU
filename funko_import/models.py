@@ -4,11 +4,13 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
+
 import string
 import random
 
 # Obtener nombre y apellido concatenados
-class Usuario(models.Model):  #!CRUD 
+
+class Usuario(models.Model): 
     idUsuario= models.BigAutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
@@ -20,7 +22,6 @@ class Usuario(models.Model):  #!CRUD
     def __str__(self):
         return f'{self.idUsuario} - {self.nombre}'
 
-#! Que no haya mas de 2 colecciones con el mismo nombre
 class Coleccion(models.Model):
     idColeccion = models.BigAutoField(primary_key=True)
     nombre = models.CharField(max_length=100, unique=True) 
@@ -168,7 +169,7 @@ class Promocion(models.Model):
             fecha_fin__gte=self.fecha_inicio,
             fecha_inicio__lte=self.fecha_fin,
         ).exclude(id=self.id)
-        if promociones_activas.count() >= 2:
+        if promociones_activas.count() >= 2:  #!Quitar el =
             raise ValidationError("No puede haber más de dos promociones activas al mismo tiempo para el mismo producto.")
 
     def save(self, *args, **kwargs):

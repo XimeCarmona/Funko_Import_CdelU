@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom'; // Importa Link
 import '../../Admin.css';
 import logoImage from '../../assets/logo.png';
 
@@ -6,7 +7,7 @@ const HeaderAdmin = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
-  // Función para manejar el cierre de sesión (puedes personalizarla según tu implementación)
+  // Función para manejar el cierre de sesión
   const handleLogout = () => {
     console.log("Cerrar sesión");
     // Aquí puedes agregar la lógica para cerrar sesión, como redirigir al login o borrar tokens de autenticación.
@@ -25,11 +26,11 @@ const HeaderAdmin = () => {
           {isMenuOpen && (
             <div className="dropdown-menu">
               <ul>
-                <li><a href="/home">Inicio</a></li>
-                <li><a href="/productos">Productos</a></li>
-                <li><a href="/categorias">Categorías</a></li>
-                <li><a href="/pedidos">Pedidos</a></li>
-                <li><a href="/edicion">Edición</a></li>
+                <li><Link to="home">Inicio</Link></li> {/* Cambiar de <a href="/home"> a <Link to="home"> */}
+                <li><Link to="productos">Productos</Link></li> {/* Cambiar de <a href="/productos"> a <Link to="productos"> */}
+                <li><Link to="categorias">Categorías</Link></li> {/* Cambiar de <a href="/categorias"> a <Link to="categorias"> */}
+                <li><Link to="pedidos">Pedidos</Link></li> {/* Cambiar de <a href="/pedidos"> a <Link to="pedidos"> */}
+                <li><Link to="edicion">Edición</Link></li> {/* Cambiar de <a href="/edicion"> a <Link to="edicion"> */}
               </ul>
             </div>
           )}
@@ -55,7 +56,7 @@ const HeaderAdmin = () => {
             {isUserMenuOpen && (
               <div className="dropdown-user absolute right-0 mt-2 bg-white border rounded shadow-md">
                 <ul>
-                  <li><a href="/perfil" className="block px-4 py-2">Mi Perfil</a></li>
+                  <li><Link to="/perfil" className="block px-4 py-2">Mi Perfil</Link></li> {/* Cambiar de <a href="/perfil"> a <Link to="/perfil"> */}
                   <li><a href="/" onClick={handleLogout} className="block px-4 py-2">Cerrar Sesión</a></li>
                 </ul>
               </div>
