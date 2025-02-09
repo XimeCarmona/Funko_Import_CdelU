@@ -193,7 +193,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
 # 📌 CLIENT_ID de tu aplicación en Google Cloud
-GOOGLE_CLIENT_ID = "308782491837-3ii9ji9967ectsmh546rqk866245rj4u.apps.googleusercontent.com"
+GOOGLE_CLIENT_ID = "CLIENT ID"
 
 def google_login(request):
     token = request.GET.get("token")  # 📌 Recibe el token de Google
