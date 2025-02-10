@@ -19,5 +19,6 @@ router.register(r'pregunta', views.preguntaView, 'Pregunta')
 urlpatterns = [
     path('api/', include(router.urls)),
     path("process_payment/", process_payment, name="process_payment"),
-    path("google_login/", google_login, name="google_login"),
+    # path("google_login/", google_login, name="google_login"),
+    path('google', views.google_login, name='google-login'),
 ]

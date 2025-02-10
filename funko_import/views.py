@@ -162,60 +162,68 @@ def process_payment(request):
     return JsonResponse({"error": "Invalid request method"}, status=400)
 
 #Login Google
-# from django.http import JsonResponse
-# from django.core.exceptions import ObjectDoesNotExist
-# from .models import Usuario  
-# from rest_framework.authtoken.models import Token
-
-# def google_callback(request):
-#     email = request.GET.get('email')  # 📌 Usamos GET en lugar de request.data
-#     if not email:
-#         return JsonResponse({'error': 'Email requerido'}, status=400)
-
-#     try:
-#         user = Usuario.objects.get(correo=email)
-#     except ObjectDoesNotExist:
-#         user = Usuario.objects.create(correo=email, nombre=email.split('@')[0])  # Ajusta los campos según tu modelo
-    
-#     # Determinar si el usuario es administrador
-#     is_admin = email == 'funkoimportcdelu@gmail.com'
-
-#     user.rol = is_admin
-#     user.save()
-    
-#     # Genera o obtiene el token del usuario
-#     token, created = Token.objects.get_or_create(user=user)
-    
-#     return JsonResponse({'token': token.key, 'is_admin': is_admin})
 
 from django.http import JsonResponse
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
-# 📌 CLIENT_ID de tu aplicación en Google Cloud
-GOOGLE_CLIENT_ID = "CLIENT ID"
+# CLIENT_ID de tu aplicación en Google Cloud
 
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+from .models import Usuario
+
+GOOGLE_CLIENT_ID = "clientId"
+@csrf_exempt  # Permite peticiones desde el frontend sin CSRF token (ajustar según configuración)
 def google_login(request):
-    token = request.GET.get("token")  # 📌 Recibe el token de Google
-    if not token:
-        return JsonResponse({"error": "Token no proporcionado"}, status=400)
+    if request.method != "POST":
+        return JsonResponse({"error": "Método no permitido"}, status=405)
 
     try:
-        # 📌 Validar el token con Google
+        data = json.loads(request.body)  # Obtener los datos enviados desde el frontend
+        token = data.get("token")  # Extraer el token de Google
+
+        if not token:
+            return JsonResponse({"error": "Token no proporcionado"}, status=400)
+
+        # Validar el token con Google
         idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
 
         if idinfo["iss"] not in ["accounts.google.com", "https://accounts.google.com"]:
             return JsonResponse({"error": "Emisor no válido"}, status=403)
 
-        # 📌 Extraer información del usuario
+        # Extraer información del usuario
+        email = idinfo["email"]
+        nombre = idinfo.get("name", "")
+        picture = idinfo.get("picture", "")
+
+        # Verificar si el usuario ya existe
+        usuario, created = Usuario.objects.get_or_create(
+            correo=email,
+            defaults={"nombre": nombre, "rol": False}  # Por defecto, no es admin
+        )
+
+        # Si el usuario tiene el correo de admin, actualizar su rol
+        if email == "funkoimportcdelu@gmail.com" and not usuario.rol:
+            usuario.rol = True
+            usuario.save()
+
+        # Responder con la información del usuario
         user_data = {
-            "email": idinfo["email"],
-            "name": idinfo.get("name", ""),
-            "picture": idinfo.get("picture", ""),
-            "is_admin": idinfo["email"] == "funkoimportcdelu@gmail.com"  # 📌 Verificar si es admin
+            "email": usuario.correo,
+            "name": usuario.nombre,
+            "picture": picture,
+            "rol": usuario.rol,  # Se usa el campo `rol` del modelo Usuario
         }
 
         return JsonResponse({"message": "Autenticación exitosa", "user": user_data})
 
     except ValueError:
         return JsonResponse({"error": "Token inválido"}, status=403)
+
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Formato JSON inválido"}, status=400)
+

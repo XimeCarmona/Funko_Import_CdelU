@@ -20,7 +20,8 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('funko_import/', include('funko_import.urls')),
+    # path('funko_import/', include('funko_import.urls')),
     path('', TemplateView.as_view(template_name='index.html')),
     path('accounts/', include('allauth.urls')),
+    path('api/auth/', include('funko_import.urls')),
 ]
