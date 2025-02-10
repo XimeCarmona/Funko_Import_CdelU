@@ -19,7 +19,7 @@ const HomePage = () => {
         .then((res) => res.json())
         .then((data) => {
           console.log("Respuesta del backend:", data);
-          if (data.user?.is_admin) {
+          if (data.user?.rol) {
             navigate("/admin");
           } else {
             navigate("/user");

@@ -176,7 +176,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from .models import Usuario
 
-GOOGLE_CLIENT_ID = "clientId"
+GOOGLE_CLIENT_ID = "ClientID"
 @csrf_exempt  # Permite peticiones desde el frontend sin CSRF token (ajustar según configuración)
 def google_login(request):
     if request.method != "POST":
