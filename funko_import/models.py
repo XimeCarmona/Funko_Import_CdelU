@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator, URLValidator
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
@@ -119,7 +119,7 @@ class Producto(models.Model): #!CRUD
     brilla = models.BooleanField(default=False)
     precio = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)]) #! agregar en forms
     cantidadDisp = models.IntegerField(validators=[MinValueValidator(0)])  
-    URLImagen = models.CharField(max_length=2083)
+    URLImagen = models.URLField(validators=[URLValidator()])
     idColeccion = models.ForeignKey(Coleccion, on_delete=models.CASCADE)
     precio_original = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], null=True, blank=True)
 
@@ -248,7 +248,7 @@ class Pregunta(models.Model): #!CRUD
     def __str__(self):
         return f'Pregunta {self.id_pregunta} - {self.pregunta}'
 
-class CarritoDescuento(models.Model):
+class CarritoDescuento(models.Model): 
     idCarritoDescuento = models.AutoField(primary_key=True)
     idCarrito = models.ForeignKey('Carrito', on_delete=models.CASCADE)
     idDescuento = models.ForeignKey('Descuento', on_delete=models.CASCADE)
@@ -273,9 +273,9 @@ class Factura(models.Model):
     fecha_venta = models.DateField()
     id_Usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE)
 
-    def calcular_total(self):
+    def calcular_total(self): #!cambiar precio porm el precio unitario de linea factura
         lineas_factura = LineaFactura.objects.filter(id_factura=self)
-        total = sum(linea.cantidad * linea.idProducto.precio for linea in lineas_factura)
+        total = sum(linea.cantidad * linea.precioUnitario for linea in lineas_factura)
         return total
 
     def save(self, *args, **kwargs):
@@ -288,6 +288,7 @@ class Factura(models.Model):
 class LineaFactura(models.Model):
     idLineaFactura = models.AutoField(primary_key=True)
     cantidad = models.IntegerField(validators=[MinValueValidator(1)])
+    precioUnitario = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], default=0.00)
     idProducto = models.ForeignKey('Producto', on_delete=models.CASCADE)    
     id_factura = models.ForeignKey('Factura', on_delete=models.CASCADE)
 
@@ -305,6 +306,7 @@ class FacturaDescuento(models.Model):
 class ProductoCarrito(models.Model):
     id_producto_carrito = models.AutoField(primary_key=True)
     cantidad = models.IntegerField(validators=[MinValueValidator(1)])
+    precioUnitario = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], default=0.00)
     id_producto = models.ForeignKey('Producto', on_delete=models.CASCADE)
     id_carrito = models.ForeignKey('Carrito', on_delete=models.CASCADE)
 

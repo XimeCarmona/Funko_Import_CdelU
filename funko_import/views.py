@@ -10,6 +10,7 @@ from rest_framework import viewsets
 import mercadopago
 from django.views.decorators.csrf import csrf_exempt
 import json
+from rest_framework.parsers import MultiPartParser, JSONParser
 
 # Create your views here.
 
@@ -31,6 +32,8 @@ class DescuentoView(viewsets.ModelViewSet):
     queryset = Descuento.objects.all()
 
 class ProductoView(viewsets.ModelViewSet): 
+    parser_classes = [MultiPartParser, JSONParser]
+    serializer_class = ProductoSerializer
     queryset = Producto.objects.all()
 
 class PromocionView(viewsets.ModelViewSet):
@@ -176,7 +179,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from .models import Usuario
 
-GOOGLE_CLIENT_ID = "ClientID"
+GOOGLE_CLIENT_ID = "CLIENT_ID"
 @csrf_exempt  # Permite peticiones desde el frontend sin CSRF token (ajustar según configuración)
 def google_login(request):
     if request.method != "POST":
