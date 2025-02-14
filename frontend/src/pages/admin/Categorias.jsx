@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import AgregarCategoria from './AgregarCategoria';
 import EditarCategoria from './EditarCategoria';
 
@@ -6,33 +7,62 @@ function Categorias() {
   const [search, setSearch] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [categories, setCategories] = useState([
-    { id: 1, nombre: 'Marvel', cantidad: 25 },
-    { id: 2, nombre: 'DC', cantidad: 18 },
-    { id: 3, nombre: 'Star Wars', cantidad: 30 },
-  ]);
+  const [categories, setCategories] = useState([]);
   const [currentCategory, setCurrentCategory] = useState(null);
 
   const filteredCategories = categories.filter((category) =>
     category.nombre.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleAddCategory = (newCategory) => {
-    setCategories([...categories, { id: categories.length + 1, ...newCategory }]);
-    setIsAdding(false);
+  // Obtener categorías desde la API
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/colecciones/');
+      console.log('Datos recibidos:', response.data); // Verifica aquí
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Detalle del error:', error.response);
+    }
   };
 
-  const handleEditCategory = (updatedCategory) => {
-    setCategories(
-      categories.map((category) =>
-        category.id === updatedCategory.id ? updatedCategory : category
-      )
-    );
-    setIsEditing(false);
+  // Agregar categoría
+  const handleAddCategory = async (newCategory) => {
+    try {
+      await axios.post('http://localhost:8000/api/colecciones/', {
+        nombre: newCategory.nombre // Solo enviar el nombre
+      });
+      await fetchCategories(); // Recargar datos
+      setIsAdding(false);
+    } catch (error) {
+      console.error('Error al agregar categoría:', error);
+    }
   };
 
-  const handleDeleteCategory = (id) => {
-    setCategories(categories.filter((category) => category.id !== id));
+  const handleEditCategory = async (updatedCategory) => {
+    try {
+      await axios.put(`http://localhost:8000/api/colecciones/${updatedCategory.idColeccion}/`, {
+        nombre: updatedCategory.nombre
+      });
+      fetchCategories(); // Recargar datos
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error al editar categoría:', error);
+    }
+  };
+
+    
+  // Eliminar categoría
+  const handleDeleteCategory = async (id) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/colecciones/${id}/`);
+      setCategories(categories.filter(category => category.idColeccion !== id));
+    } catch (error) {
+      console.error('Error al eliminar categoría:', error);
+    }
   };
 
   const handleEditClick = (category) => {
@@ -68,7 +98,7 @@ function Categorias() {
           </thead>
           <tbody>
             {filteredCategories.map((category) => (
-              <tr key={category.id} className="border-t">
+              <tr key={category.idColeccion} className="border-t">
                 <td className="px-4 py-2">{category.nombre}</td>
                 <td className="px-4 py-2">{category.cantidad}</td>
                 <td className="px-4 py-2">
@@ -80,7 +110,7 @@ function Categorias() {
                   </button>
                   <button
                     className="btn-delete"
-                    onClick={() => handleDeleteCategory(category.id)}
+                    onClick={() => handleDeleteCategory(category.idColeccion)}
                   >
                     Eliminar
                   </button>

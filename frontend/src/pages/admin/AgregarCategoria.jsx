@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 function AgregarCategoria({ onClose, onAddCategory }) {
-  const [newCategory, setNewCategory] = useState({ nombre: '', cantidad: 0 });
+  const [newCategory, setNewCategory] = useState({ nombre: ''});
 
   const handleSave = () => {
     if (newCategory.nombre.trim() === '') {
@@ -9,7 +9,7 @@ function AgregarCategoria({ onClose, onAddCategory }) {
       return;
     }
     onAddCategory(newCategory);
-    setNewCategory({ nombre: '', cantidad: 0 });
+    setNewCategory({ nombre: ''});
     onClose();
   };
 
@@ -28,7 +28,7 @@ function AgregarCategoria({ onClose, onAddCategory }) {
             />
           </label>
         </div>
-        <div className="blockAC">
+        {/* <div className="blockAC">
           <label>
             Cantidad:
             <input
@@ -41,7 +41,7 @@ function AgregarCategoria({ onClose, onAddCategory }) {
               }
             />
           </label>
-        </div>
+        </div> */}
         <div className="modal-actionsAC">
           <button className="btn-cancelAC" onClick={onClose}>
             Cancelar

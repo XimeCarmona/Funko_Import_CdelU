@@ -11,9 +11,12 @@ class UsuarioSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ColeccionSerializer(serializers.ModelSerializer):
+    cantidad = serializers.ReadOnlyField()
     class Meta:
         model = Coleccion
-        fields = '__all__'
+        fields = ['idColeccion', 'nombre', 'cantidad']
+
+    cantidad = serializers.ReadOnlyField()
 
 class CarritoSerializer(serializers.ModelSerializer):
     class Meta:

@@ -23,6 +23,7 @@ class ColeccionView(viewsets.ModelViewSet):
     serializer_class = ColeccionSerializer
     queryset = Coleccion.objects.all()
 
+
 class CarritoView(viewsets.ModelViewSet): 
     serializer_class = CarritoSerializer
     queryset = carrito.objects.all()

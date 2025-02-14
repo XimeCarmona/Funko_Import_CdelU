@@ -26,6 +26,10 @@ class Coleccion(models.Model):
     idColeccion = models.BigAutoField(primary_key=True)
     nombre = models.CharField(max_length=100, unique=True) 
 
+    @property
+    def cantidad(self):
+        return self.producto_set.count()
+
     def clean(self):
         super().clean()
         if Coleccion.objects.exclude(idColeccion=self.idColeccion).filter(nombre=self.nombre).exists():
@@ -120,7 +124,7 @@ class Producto(models.Model): #!CRUD
     precio = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)]) #! agregar en forms
     cantidadDisp = models.IntegerField(validators=[MinValueValidator(0)])  
     URLImagen = models.URLField(validators=[URLValidator()])
-    idColeccion = models.ForeignKey(Coleccion, on_delete=models.CASCADE)
+    idColeccion = models.ForeignKey(Coleccion, on_delete=models.CASCADE,related_name='productos')
     precio_original = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], null=True, blank=True)
 
     def clean(self):
