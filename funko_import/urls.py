@@ -15,6 +15,7 @@ router.register(r'productos', views.ProductoView, basename='producto')
 router.register(r'promociones', views.PromocionView, basename='promocion')
 router.register(r'resenas', views.resenaComentarioView, basename='resena')
 router.register(r'preguntas', views.preguntaView, basename='pregunta')
+router.register(r'ediciones', views.EdicionView, basename='edicion')
 
 urlpatterns = [
     # path('api/', include(router.urls)),

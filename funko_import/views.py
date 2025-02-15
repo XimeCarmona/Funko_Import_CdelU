@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-from .models import Usuario, Coleccion, carrito, Descuento, Producto, Promocion, IngresoStock, PeticionProducto, ResenaComentario, Pregunta, CarritoDescuento, Factura, LineaFactura, FacturaDescuento, ProductoCarrito, CodigoSeguimiento
+from .models import Usuario, Coleccion, carrito, Descuento, Producto, Promocion, IngresoStock, PeticionProducto, ResenaComentario, Pregunta, CarritoDescuento, Factura, LineaFactura, FacturaDescuento, ProductoCarrito, CodigoSeguimiento, Edicion
 from django.views.generic import CreateView, TemplateView
-from .serializers import UsuarioSerializer, ColeccionSerializer, CarritoSerializer, DescuentoSerializer, ProductoSerializer, PromocionSerializer, IngresoStockSerializer, PeticionProductoSerializer, ResenaComentarioSerializer, PreguntaSerializer, CarritoDescuentoSerializer, FacturaSerializer, LineaFacturaSerializer, FacturaDescuentoSerializer, ProductoCarritoSerializer, CodigoSeguimientoSerializer
+from .serializers import UsuarioSerializer, ColeccionSerializer, CarritoSerializer, DescuentoSerializer, ProductoSerializer, PromocionSerializer, IngresoStockSerializer, PeticionProductoSerializer, ResenaComentarioSerializer, PreguntaSerializer, CarritoDescuentoSerializer, FacturaSerializer, LineaFacturaSerializer, FacturaDescuentoSerializer, ProductoCarritoSerializer, CodigoSeguimientoSerializer, EdicionSerializer
 from .forms import UsuarioForm, ColeccionForm, DescuentoForm, productoForm, promocionForm, IngresoStockForm, PeticionProductoForm, ResenaComentarioForm, PreguntaForm, RespuestaForm
 from django.urls import reverse_lazy
 from rest_framework import viewsets
@@ -23,6 +23,9 @@ class ColeccionView(viewsets.ModelViewSet):
     serializer_class = ColeccionSerializer
     queryset = Coleccion.objects.all()
 
+class EdicionView(viewsets.ModelViewSet):
+    serializer_class = EdicionSerializer
+    queryset = Edicion.objects.all()
 
 class CarritoView(viewsets.ModelViewSet): 
     serializer_class = CarritoSerializer
@@ -60,6 +63,12 @@ def getColecciones(request):
     colecciones = Coleccion.objects.all()
     serializer = ColeccionSerializer(colecciones, many=True)
     return JsonResponse(serializer.data, safe=False)
+
+def getEdiciones(request):
+    ediciones = Edicion.objects.all()
+    serializer = EdicionSerializer(ediciones, many=True)
+    return JsonResponse(serializer.data, safe=False)
+
 
 def getCarritos(request):
     carritos = carrito.objects.all()
@@ -123,6 +132,10 @@ def ResenasComentariosRest (request):
 def PreguntasRest (request):
     pregunta=getPreguntas()
     return JsonResponse(pregunta)
+
+def edicionRest (request):
+    edicion=getEdiciones()
+    return JsonResponse(edicion)
 
 #MercadoPago
 # Credenciales de acceso (Access Token)

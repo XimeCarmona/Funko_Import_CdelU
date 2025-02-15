@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import (
     Usuario, Coleccion, carrito, Descuento, Producto, Promocion, IngresoStock, 
     PeticionProducto, ResenaComentario, Pregunta, CarritoDescuento, Factura, 
-    LineaFactura, FacturaDescuento, ProductoCarrito, CodigoSeguimiento
+    LineaFactura, FacturaDescuento, ProductoCarrito, CodigoSeguimiento, Edicion
 )
 
 class UsuarioSerializer(serializers.ModelSerializer):
@@ -88,3 +88,8 @@ class CodigoSeguimientoSerializer(serializers.ModelSerializer):
     class Meta:
         model = CodigoSeguimiento
         fields = '__all__'
+
+class EdicionSerializer (serializers.ModelSerializer):
+    class Meta:
+        model = Edicion
+        fields = ['id_edicion', 'nombre', 'cantidad']

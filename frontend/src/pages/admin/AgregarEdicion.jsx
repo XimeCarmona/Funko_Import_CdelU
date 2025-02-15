@@ -2,17 +2,15 @@ import React, { useState } from 'react';
 
 function AgregarEdicion({ onCancel, onSave }) {
   const [newEdition, setNewEdition] = useState({
-    nombre: '',
-    cantidad: 0,
+    nombre: '', // Solo necesitamos el nombre
   });
 
   const handleSave = () => {
-    if (newEdition.nombre.trim() === '' || newEdition.cantidad <= 0) {
-      alert('Por favor, complete todos los campos correctamente.');
+    if (newEdition.nombre.trim() === '') {
+      alert('El nombre de la edición es obligatorio.');
       return;
     }
-    onSave(newEdition);
-    setNewEdition({ nombre: '', cantidad: 0 }); // Resetear el formulario
+    onSave(newEdition); // Enviamos solo el nombre
   };
 
   return (
@@ -28,19 +26,6 @@ function AgregarEdicion({ onCancel, onSave }) {
             value={newEdition.nombre}
             onChange={(e) =>
               setNewEdition({ ...newEdition, nombre: e.target.value })
-            }
-          />
-        </label>
-        <label className="blockAE my-2">
-          Cantidad:
-          <input
-            type="number"
-            min="1"
-            placeholder="Ingrese cantidad"
-            className="input-field"
-            value={newEdition.cantidad}
-            onChange={(e) =>
-              setNewEdition({ ...newEdition, cantidad: parseInt(e.target.value) })
             }
           />
         </label>

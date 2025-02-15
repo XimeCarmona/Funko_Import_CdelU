@@ -42,6 +42,24 @@ class Coleccion(models.Model):
     def __str__(self):
         return self.nombre
  
+class Edicion(models.Model):
+    id_edicion = models.BigAutoField(primary_key=True)
+    nombre = models.CharField(max_length=100, unique=True)
+    
+    @property
+    def cantidad(self):
+        return self.producto_set.count()
+
+    def __str__(self):
+        return self.nombre
+
+    def clean(self):
+        if Edicion.objects.exclude(id_edicion=self.id_edicion).filter(nombre=self.nombre).exists():
+            raise ValidationError({'nombre': 'Ya existe una edición con este nombre.'})
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 #!calcular el total del carrito
 #!que no haya mas de 2 carritos con el mismo usuario
@@ -338,5 +356,7 @@ class CodigoSeguimiento(models.Model): #?CRUD despues vemos
 
     def __str__(self):
         return f'Codigo Seguimiento {self.codigo} - {self.id_factura}'
+
+    
 
 
