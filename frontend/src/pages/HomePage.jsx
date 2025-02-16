@@ -1,56 +1,31 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { GoogleLogin } from "@react-oauth/google"; // Importar GoogleLogin
-import * as jwtDecode from "jwt-decode";
 import logoImage from "../assets/logo.png";
 import "../HomePage.css"; 
 
 const HomePage = () => {
   const navigate = useNavigate();
 
-  const handleGoogleLogin = (response) => {
-    if (response?.credential) {
-      console.log("Token recibido de Google:", response.credential);
-      fetch("http://localhost:8000/api/auth/google", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: response.credential }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          console.log("Respuesta del backend:", data);
-          if (data.user?.rol) {
-            navigate("/admin");
-          } else {
-            navigate("/user");
-          }
-        })
-        .catch((error) => {
-          console.error("Error al autenticar:", error);
-        });
-    } else {
-      console.error("No se recibió el token de Google.");
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      // Si ya hay sesión, ir directamente a la vista de usuario
+      navigate("/user");
     }
-  };
-  
-  
+  }, []);
 
   return (
-    <div className="home-container-HP">
-      {/* Logo */}
-      <div className="logo-containerHP">
-        <img src={logoImage} alt="Logo" className="logoHP" />
+    <div className="flex items-center justify-center min-h-screen bg-gray-200">
+      <div className="text-center">
+        <img src={logoImage} alt="Logo" className="w-40 mx-auto mb-6" />
+        <h1 className="text-4xl font-bold mb-6">Bienvenido</h1>
+        <button 
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg" 
+          onClick={() => navigate("/login")}
+        >
+          Iniciar sesión
+        </button>
       </div>
-
-      {/* Texto "Iniciar sesión" */}
-      <h1 className="login-textHP">Iniciar sesión</h1>
-
-      {/* Botón de Google */}
-      <GoogleLogin 
-        onSuccess={handleGoogleLogin} 
-        onError={() => console.log("Error en login con Google")} 
-        useOneTap
-      />
     </div>
   );
 };

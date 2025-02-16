@@ -21,6 +21,5 @@ from django.views.generic import TemplateView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
-    # path('api/auth/', include('funko_import.urls')),
     path('api/', include('funko_import.urls')),
 ]

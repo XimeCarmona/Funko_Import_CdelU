@@ -1,26 +1,37 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
-import HomePage from "./pages/HomePage";
-//admin
+import LoginPage from "./pages/LoginPage";
+import CompletarPerfil from "./pages/CompletarPerfil";
+import "@fortawesome/fontawesome-free/css/all.min.css";
+
+// Admin
 import HeaderAdmin from "./components/admin/HeaderAdmin";
 import AdminHome from "./pages/admin/AdminHome";
 import Productos from "./pages/admin/Productos";
 import Categorias from "./pages/admin/Categorias";
 import Pedidos from "./pages/admin/Pedidos";
 import Edicion from "./pages/admin/Edicion";
-import Perfil from "./pages/admin/Perfil";
-//user
+import Perfil from "./pages/admin/AdPerfil";
+
+// User
 import UserHome from "./pages/user/UserHome";
 import Funko from "./pages/user/Funko";
 import Cart from "./pages/user/Cart";
 import Favorites from "./pages/user/Favorites";
+import PerfilUser from "./pages/user/PerfilUser";
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Página inicial */}
-        <Route path="/" element={<HomePage />} />
+        {/* Al ingresar a la página, redirigir automáticamente a la vista de usuario */}
+        <Route path="/" element={<Navigate to="/user" />} />
+
+        {/* Página de inicio de sesión */}
+        <Route path="/login" element={<LoginPage />} />
+
+        {/* Página para completar el perfil */}
+        <Route path="/completar-perfil" element={<CompletarPerfil />} />
 
         {/* Rutas del Administrador */}
         <Route path="/admin" element={<AdminLayout />}>
@@ -39,17 +50,18 @@ function App() {
           <Route path="funko/:id" element={<Funko />} />
           <Route path="carrito" element={<Cart />} />
           <Route path="favorites" element={<Favorites />} />
+          <Route path="perfil" element={<PerfilUser />} />
           <Route path="*" element={<Navigate to="/user" />} />
         </Route>
 
-        {/* Ruta por defecto o no encontrada */}
-        <Route path="*" element={<Navigate to="/" />} />
+        {/* Ruta por defecto */}
+        <Route path="*" element={<Navigate to="/user" />} />
       </Routes>
     </Router>
   );
 }
 
-//Layout del Administrador
+// Layout del Administrador
 function AdminLayout() {
   return (
     <div>
@@ -61,11 +73,11 @@ function AdminLayout() {
   );
 }
 
-// 📌 Layout del Usuario (Corregido)
+// Layout del Usuario
 function UserLayout() {
   return (
     <div>
-        <Outlet />
+      <Outlet />
     </div>
   );
 }

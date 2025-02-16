@@ -1,8 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
 from . import views
-from .views import process_payment
-from .views import google_login 
+
 
 router = routers.DefaultRouter()
 # router.register(r'Coleccion', views.ColeccionView, 'Coleccion')
@@ -18,9 +17,8 @@ router.register(r'preguntas', views.preguntaView, basename='pregunta')
 router.register(r'ediciones', views.EdicionView, basename='edicion')
 
 urlpatterns = [
-    # path('api/', include(router.urls)),
-    path('', include(router.urls)),
-    path("process_payment/", process_payment, name="process_payment"),
-    # path("google_login/", google_login, name="google_login"),
-    path('auth/google', views.google_login, name='google-login'),
+    path('', include(router.urls)),  # Rutas del router bajo el prefijo 'api/auth/'
+    path('auth/google-login/', views.google_login, name='google_login'),  # Ahora estÃ¡ bajo 'api/auth/google-login/'
+    path("process_payment/", views.process_payment, name="process_payment"),
+    path('auth/completar-perfil/', views.completar_perfil, name='completar_perfil'),
 ]

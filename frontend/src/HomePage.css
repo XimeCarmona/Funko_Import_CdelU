@@ -1,61 +1,119 @@
-/* 📌 Fondo y alineación general */
 .home-container-HP {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background-color: #8abbe6; /* Color celeste claro */
-    text-align: center;
-  }
-  
-  /* 📌 Contenedor del logo */
-  .logo-containerHP {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    margin-bottom: 20px; /* Reducido el margen para mejor proporción */
-  }
-  
-  /* 📌 Estilo del logo */
-  .logoHP {
-    width: 280px; /* Tamaño más equilibrado */
-  }
-  
-  /* 📌 Texto "Iniciar sesión" */
-  .login-textHP {
-    font-size: 20px;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 20px;
-  }
-  
-  /* 📌 Botón de Google */
-  .google-login-buttonHP {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 280px;
-    padding: 12px 0;
-    background-color: white;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    border: 1px solid #ccc;
-    border-radius: 25px;
-    text-decoration: none;
-    color: #555;
-    font-weight: 500;
-    transition: background-color 0.2s ease-in-out;
-    cursor: pointer;
-  }
-  
-  .google-login-buttonHP:hover {
-    background-color: #f2f2f2;
-  }
-  
-  /* 📌 Icono de Google */
-  .google-iconHP {
-    width: 24px;
-    height: 24px;
-    margin-right: 10px;
-  }
-  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #8abbe6; /* Color celeste claro */
+  text-align: center;
+}
+
+.logo-containerHP {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 20px; /* Reducido el margen para mejor proporci贸n */
+}
+
+.logoHP {
+  width: 280px; 
+}
+
+.login-textHP {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.google-login-buttonHP {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 280px;
+  padding: 12px 0;
+  background-color: white;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ccc;
+  border-radius: 25px;
+  text-decoration: none;
+  color: #555;
+  font-weight: 500;
+  transition: background-color 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.google-login-buttonHP:hover {
+  background-color: #f2f2f2;
+}
+
+.google-iconHP {
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+}
+
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-container {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.modal-container input {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 8px;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.modal-content input {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+}
+
+.modal-content button {
+  background: #28a745;
+  color: white;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.modal-content button:hover {
+  background: #218838;
+}
