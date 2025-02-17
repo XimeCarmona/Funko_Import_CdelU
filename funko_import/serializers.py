@@ -32,6 +32,11 @@ class ProductoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Producto
         fields = '__all__'
+        extra_kwargs = {
+            'esEspecial': {'required': True},
+            'brilla': {'required': True},
+            'idColeccion': {'required': True}
+        }
         read_only_fields = ('id',)
 
 class PromocionSerializer(serializers.ModelSerializer):

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import AgregarProducto from './AgregarProducto';
 import EditarProducto from './EditarProducto';
 
@@ -6,17 +7,43 @@ function Productos() {
   const [search, setSearch] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [productos, setProductos] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  
-  const [productos, setProductos] = useState([
-    { id: 1, imagen: '/path-to-image1.jpg', nombre: 'Funko Pop 1', categoria: 'Marvel', precio: '$15', stock: 20 },
-    { id: 2, imagen: '/path-to-image2.jpg', nombre: 'Funko Pop 2', categoria: 'DC', precio: '$12', stock: 15 },
-    { id: 3, imagen: '/path-to-image3.jpg', nombre: 'Funko Pop 3', categoria: 'Star Wars', precio: '$20', stock: 10 },
-  ]);
+  const [colecciones, setColecciones] = useState([]);
+  const [ediciones, setEdiciones] = useState([]);
 
-  const productosFiltrados = productos.filter(producto =>
-    producto.nombre.toLowerCase().includes(search.toLowerCase())
-  );
+  useEffect(() => {
+    fetchProductos();
+    fetchColecciones();
+    fetchEdiciones();
+  }, []);
+
+  const fetchProductos = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/productos/');
+      setProductos(response.data);
+    } catch (error) {
+      console.error('Error al obtener productos:', error);
+    }
+  };
+
+  const fetchColecciones = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/colecciones/');
+      setColecciones(response.data);
+    } catch (error) {
+      console.error('Error al obtener colecciones:', error);
+    }
+  };
+
+  const fetchEdiciones = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/ediciones/');
+      setEdiciones(response.data);
+    } catch (error) {
+      console.error('Error al obtener ediciones:', error);
+    }
+  };
 
   const handleAddProductClick = () => setIsAdding(true);
   const handleEditProductClick = (producto) => {
@@ -30,15 +57,50 @@ function Productos() {
     setSelectedProduct(null);
   };
 
-  const addNewProduct = (product) => {
-    setProductos([...productos, { id: productos.length + 1, ...product }]);
+  const addNewProduct = async (formData) => {
+    try {
+      const response = await axios.post('http://localhost:8000/api/productos/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      if (response.status === 201) {
+        await fetchProductos();
+        closeModal();
+        alert('Producto creado exitosamente!');
+      }
+    } catch (error) {
+      console.error('Error detallado:', error.response?.data);
+      alert(`Error: ${error.response?.data?.detail || 'Error al crear producto'}`);
+    }
   };
 
-  const saveEditedProduct = (editedProduct) => {
-    setProductos(productos.map((producto) =>
-      producto.id === editedProduct.id ? editedProduct : producto
-    ));
+  const saveEditedProduct = async (editedProduct) => {
+    try {
+      await axios.put(`http://localhost:8000/api/productos/${editedProduct.idProducto}/`, editedProduct);
+      await fetchProductos();
+      closeModal();
+    } catch (error) {
+      console.error('Error al editar producto:', error);
+    }
   };
+
+  const handleDeleteProduct = async (id) => {
+    if (!window.confirm('¿Estás seguro de eliminar este producto?')) return;
+    
+    try {
+      await axios.delete(`http://localhost:8000/api/productos/${id}/`);
+      setProductos(productos.filter(producto => producto.idProducto !== id));
+    } catch (error) {
+      console.error('Error al eliminar producto:', error);
+      alert('Error al eliminar el producto');
+    }
+  };
+
+  const productosFiltrados = productos.filter(producto =>
+    producto.nombre.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="main-content">
@@ -71,17 +133,30 @@ function Productos() {
           </thead>
           <tbody>
             {productosFiltrados.map((producto) => (
-              <tr key={producto.id}>
+              <tr key={producto.idProducto}>
                 <td className="px-4 py-2">
-                  <img src={producto.imagen} alt={producto.nombre} className="w-16 h-16 object-cover" />
+                  <img 
+                    src={producto.URLImagen} 
+                    alt={producto.nombre} 
+                    className="w-16 h-16 object-cover" 
+                  />
                 </td>
                 <td className="px-4 py-2">{producto.nombre}</td>
-                <td className="px-4 py-2">{producto.categoria}</td>
-                <td className="px-4 py-2">{producto.precio}</td>
-                <td className="px-4 py-2">{producto.stock}</td>
                 <td className="px-4 py-2">
-                  <button className="btn-edit" onClick={() => handleEditProductClick(producto)}>Editar</button>
-                  <button className="btn-delete">Eliminar</button>
+                  {colecciones.find(c => c.idColeccion === producto.idColeccion)?.nombre}
+                </td>
+                <td className="px-4 py-2">${producto.precio}</td>
+                <td className="px-4 py-2">{producto.cantidadDisp}</td>
+                <td className="px-4 py-2">
+                  <button className="btn-edit" onClick={() => handleEditProductClick(producto)}>
+                    Editar
+                  </button>
+                  <button 
+                    className="btn-delete" 
+                    onClick={() => handleDeleteProduct(producto.idProducto)}
+                  >
+                    Eliminar
+                  </button>
                 </td>
               </tr>
             ))}
@@ -89,12 +164,22 @@ function Productos() {
         </table>
       </div>
 
-      {isAdding && <AgregarProducto closeModal={closeModal} onAddProduct={addNewProduct}/>}
+      {isAdding && colecciones.length > 0 && ediciones.length > 0 && (
+        <AgregarProducto 
+          closeModal={closeModal}
+          onAddProduct={addNewProduct}
+          colecciones={colecciones}
+          ediciones={ediciones}
+        />
+      )}
+      
       {isEditing && (
         <EditarProducto
           producto={selectedProduct}
           closeModal={closeModal}
           onSave={saveEditedProduct}
+          colecciones={colecciones}
+          ediciones={ediciones}
         />
       )}
     </div>

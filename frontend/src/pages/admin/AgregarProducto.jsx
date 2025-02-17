@@ -1,26 +1,67 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-function AgregarProducto({ closeModal, onAddProduct }) {
+function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones = [] }) {
   const [newProduct, setNewProduct] = useState({
-    imagen: '',
     nombre: '',
-    sku: '',
-    edicion: '',
-    coleccion: 'Marvel',
-    edicionEspecial: 'no',
-    brilla: 'no',
-    stock: 0,
+    numero: 1,
+    nombreEdicion: '',
+    esEspecial: false,
     descripcion: '',
+    brilla: false,
     precio: 0,
+    cantidadDisp: 0,
+    URLImagen: null, // Cambiado a null para manejar el File object
+    idColeccion: '',
+    precio_original: 0
   });
 
+  useEffect(() => {
+    if (colecciones.length > 0) {
+      setNewProduct(prev => ({
+        ...prev,
+        idColeccion: colecciones[0]?.idColeccion || ''
+      }));
+    }
+  }, [colecciones]);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setNewProduct(prev => ({
+        ...prev,
+        URLImagen: file // Guardamos el objeto File completo
+      }));
+    }
+  };
+
   const handleAddProduct = () => {
-    if (!newProduct.nombre || newProduct.precio <= 0 || newProduct.stock < 0) {
-      alert('Por favor, complete todos los campos obligatorios correctamente.');
+    // Validación mejorada
+    if (!newProduct.nombre || 
+        newProduct.precio <= 0 || 
+        newProduct.cantidadDisp < 0 || 
+        !newProduct.idColeccion) {
+      alert('Por favor complete todos los campos obligatorios (*)');
       return;
     }
-    onAddProduct(newProduct); // Llamamos a la función para agregar el producto
-    closeModal(); // Cierra el modal después de agregar el producto
+
+    // Crear FormData para enviar archivos
+    const formData = new FormData();
+  
+  formData.append('nombre', newProduct.nombre);
+  formData.append('numero', newProduct.numero);
+  formData.append('nombreEdicion', newProduct.nombreEdicion);
+  formData.append('esEspecial', newProduct.esEspecial ? 'True' : 'False'); // Enviar como string
+  formData.append('descripcion', newProduct.descripcion);
+  formData.append('brilla', newProduct.brilla ? 'True' : 'False'); // Enviar como string
+  formData.append('precio', newProduct.precio);
+  formData.append('cantidadDisp', newProduct.cantidadDisp);
+  formData.append('idColeccion', newProduct.idColeccion);
+  
+  if (newProduct.URLImagen) {
+    formData.append('URLImagen', newProduct.URLImagen);
+  }
+
+  onAddProduct(formData);
   };
 
   return (
@@ -34,12 +75,13 @@ function AgregarProducto({ closeModal, onAddProduct }) {
               type="file"
               className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
               onChange={(e) =>
-                setNewProduct({ ...newProduct, imagen: e.target.files[0]?.name || '' })
+                setNewProduct({ ...newProduct, URLImagen: e.target.files[0]?.name || '' })
               }
             />
           </label>
+          
           <label className="block">
-            <span className="text-gray-700">Nombre del Producto:</span>
+            <span className="text-gray-700">Nombre del Producto:*</span>
             <input
               type="text"
               className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
@@ -48,88 +90,105 @@ function AgregarProducto({ closeModal, onAddProduct }) {
               onChange={(e) =>
                 setNewProduct({ ...newProduct, nombre: e.target.value })
               }
+              required
             />
           </label>
+
           <label className="block">
-            <span className="text-gray-700">SKU:</span>
+            <span className="text-gray-700">Número en Colección:</span>
             <input
-              type="text"
+              type="number"
               className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
-              placeholder="Ingrese SKU del producto"
-              value={newProduct.sku}
+              min="1"
+              value={newProduct.numero}
               onChange={(e) =>
-                setNewProduct({ ...newProduct, sku: e.target.value })
+                setNewProduct({ ...newProduct, numero: parseInt(e.target.value) || 1 })
               }
             />
           </label>
+
           <label className="block">
             <span className="text-gray-700">Edición:</span>
-            <input
-              type="text"
-              className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
-              placeholder="Ingrese edición del producto"
-              value={newProduct.edicion}
-              onChange={(e) =>
-                setNewProduct({ ...newProduct, edicion: e.target.value })
-              }
-            />
-          </label>
-          <label className="block">
-            <span className="text-gray-700">Colección:</span>
             <select
               className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
-              value={newProduct.coleccion}
+              value={newProduct.nombreEdicion}
               onChange={(e) =>
-                setNewProduct({ ...newProduct, coleccion: e.target.value })
+                setNewProduct({ ...newProduct, nombreEdicion: e.target.value })
               }
             >
-              <option value="Marvel">Marvel</option>
-              <option value="DC">DC</option>
-              <option value="Star Wars">Star Wars</option>
+              <option value="">Seleccione edición</option>
+              {ediciones.map(edicion => (
+                <option key={edicion.id_edicion} value={edicion.nombre}>
+                  {edicion.nombre}
+                </option>
+              ))}
             </select>
           </label>
+
+          <label className="block">
+            <span className="text-gray-700">Colección:*</span>
+            <select
+              className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
+              value={newProduct.idColeccion}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, idColeccion: parseInt(e.target.value) })
+              }
+              required
+            >
+              {colecciones.map(coleccion => (
+                <option key={coleccion.idColeccion} value={coleccion.idColeccion}>
+                  {coleccion.nombre}
+                </option>
+              ))}
+            </select>
+          </label>
+
           <label className="block">
             <span className="text-gray-700">Edición Especial:</span>
             <select
               className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
-              value={newProduct.edicionEspecial}
+              value={newProduct.esEspecial ? 'si' : 'no'}
               onChange={(e) =>
-                setNewProduct({ ...newProduct, edicionEspecial: e.target.value })
+                setNewProduct({ ...newProduct, esEspecial: e.target.value === 'si' })
               }
             >
               <option value="si">Sí</option>
               <option value="no">No</option>
             </select>
           </label>
+
           <label className="block">
-            <span className="text-gray-700">Brilla:</span>
+            <span className="text-gray-700">Brilla en la oscuridad:</span>
             <select
               className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
-              value={newProduct.brilla}
+              value={newProduct.brilla ? 'si' : 'no'}
               onChange={(e) =>
-                setNewProduct({ ...newProduct, brilla: e.target.value })
+                setNewProduct({ ...newProduct, brilla: e.target.value === 'si' })
               }
             >
               <option value="si">Sí</option>
               <option value="no">No</option>
             </select>
           </label>
+
           <label className="block">
-            <span className="text-gray-700">Stock:</span>
+            <span className="text-gray-700">Stock:*</span>
             <input
               type="number"
               className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
               min="0"
-              value={newProduct.stock}
+              value={newProduct.cantidadDisp}
               onChange={(e) =>
-                setNewProduct({ ...newProduct, stock: parseInt(e.target.value) || 0 })
+                setNewProduct({ ...newProduct, cantidadDisp: parseInt(e.target.value) || 0 })
               }
+              required
             />
           </label>
+
           <label className="block col-span-2">
             <span className="text-gray-700">Descripción:</span>
             <textarea
-              className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
+              className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md h-24"
               placeholder="Ingrese descripción del producto"
               value={newProduct.descripcion}
               onChange={(e) =>
@@ -137,31 +196,37 @@ function AgregarProducto({ closeModal, onAddProduct }) {
               }
             />
           </label>
+
           <label className="block col-span-2">
-            <span className="text-gray-700">Precio:</span>
+            <span className="text-gray-700">Precio:*</span>
             <input
               type="number"
               className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
               min="0"
+              step="0.01"
               value={newProduct.precio}
               onChange={(e) =>
                 setNewProduct({ ...newProduct, precio: parseFloat(e.target.value) || 0 })
               }
+              required
             />
           </label>
         </div>
+
         <div className="modal-actionsAP flex justify-end mt-4">
           <button
-            className="btn-cancelAP text-sm text-gray-600 px-4 py-2 mr-2 border border-gray-300 rounded-lg"
+            className="btn-cancelAP text-sm text-gray-600 px-4 py-2 mr-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             onClick={closeModal}
+            type="button"
           >
             Cancelar
           </button>
           <button
-            className="btn-saveAP text-white bg-blue-500 px-4 py-2 rounded-lg"
+            className="btn-saveAP text-white bg-blue-500 px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
             onClick={handleAddProduct}
+            type="button"
           >
-            Guardar
+            Guardar Producto
           </button>
         </div>
       </div>

@@ -10,7 +10,7 @@ from rest_framework import viewsets
 import mercadopago
 from django.views.decorators.csrf import csrf_exempt
 import json
-from rest_framework.parsers import MultiPartParser, JSONParser
+from rest_framework.parsers import MultiPartParser,FormParser,JSONParser
 
 # Create your views here.
 
@@ -36,7 +36,7 @@ class DescuentoView(viewsets.ModelViewSet):
     queryset = Descuento.objects.all()
 
 class ProductoView(viewsets.ModelViewSet): 
-    parser_classes = [MultiPartParser, JSONParser]
+    parser_classes = (MultiPartParser, FormParser)
     serializer_class = ProductoSerializer
     queryset = Producto.objects.all()
 
