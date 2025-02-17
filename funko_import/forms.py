@@ -50,7 +50,7 @@ class DescuentoForm(forms.ModelForm):
 class productoForm(forms.ModelForm):
     class Meta:
         model = Producto
-        fields = ['nombre','numero','nombreEdicion','esEspecial','descripcion','brilla','precio','cantidadDisp','URLImagen','idColeccion']
+        fields = ['nombre','numero','nombreEdicion','esEspecial','descripcion','brilla','precio','cantidadDisp','imagen','idColeccion']
         widgets = {
             'idColeccion': forms.Select(attrs={'class': 'form-control'}),
             }

@@ -10,7 +10,7 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
     brilla: false,
     precio: 0,
     cantidadDisp: 0,
-    URLImagen: null, // Cambiado a null para manejar el File object
+    imagen: null, // Aquí se guardará el objeto File
     idColeccion: '',
     precio_original: 0
   });
@@ -24,44 +24,41 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
     }
   }, [colecciones]);
 
+  // Función para capturar el objeto File cuando el usuario selecciona la imagen
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setNewProduct(prev => ({
         ...prev,
-        URLImagen: file // Guardamos el objeto File completo
+        imagen: file
       }));
     }
   };
 
   const handleAddProduct = () => {
-    // Validación mejorada
-    if (!newProduct.nombre || 
-        newProduct.precio <= 0 || 
-        newProduct.cantidadDisp < 0 || 
-        !newProduct.idColeccion) {
+    // Validación de campos obligatorios
+    if (!newProduct.nombre || newProduct.precio <= 0 || newProduct.cantidadDisp < 0 || !newProduct.idColeccion) {
       alert('Por favor complete todos los campos obligatorios (*)');
       return;
     }
 
-    // Crear FormData para enviar archivos
+    // Crear un objeto FormData para enviar los datos y el archivo
     const formData = new FormData();
-  
-  formData.append('nombre', newProduct.nombre);
-  formData.append('numero', newProduct.numero);
-  formData.append('nombreEdicion', newProduct.nombreEdicion);
-  formData.append('esEspecial', newProduct.esEspecial ? 'True' : 'False'); // Enviar como string
-  formData.append('descripcion', newProduct.descripcion);
-  formData.append('brilla', newProduct.brilla ? 'True' : 'False'); // Enviar como string
-  formData.append('precio', newProduct.precio);
-  formData.append('cantidadDisp', newProduct.cantidadDisp);
-  formData.append('idColeccion', newProduct.idColeccion);
-  
-  if (newProduct.URLImagen) {
-    formData.append('URLImagen', newProduct.URLImagen);
-  }
+    formData.append('nombre', newProduct.nombre);
+    formData.append('numero', newProduct.numero);
+    formData.append('nombreEdicion', newProduct.nombreEdicion);
+    formData.append('esEspecial', newProduct.esEspecial ? 'True' : 'False');
+    formData.append('descripcion', newProduct.descripcion);
+    formData.append('brilla', newProduct.brilla ? 'True' : 'False');
+    formData.append('precio', newProduct.precio);
+    formData.append('cantidadDisp', newProduct.cantidadDisp);
+    formData.append('idColeccion', newProduct.idColeccion);
+    // Si existe imagen, la agregamos al FormData
+    if (newProduct.imagen) {
+      formData.append('imagen', newProduct.imagen);
+    }
 
-  onAddProduct(formData);
+    onAddProduct(formData);
   };
 
   return (
@@ -74,9 +71,7 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
             <input
               type="file"
               className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
-              onChange={(e) =>
-                setNewProduct({ ...newProduct, URLImagen: e.target.files[0]?.name || '' })
-              }
+              onChange={handleFileChange}  // Usamos la función que guarda el objeto File
             />
           </label>
           
@@ -87,9 +82,7 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
               className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
               placeholder="Ingrese nombre del producto"
               value={newProduct.nombre}
-              onChange={(e) =>
-                setNewProduct({ ...newProduct, nombre: e.target.value })
-              }
+              onChange={(e) => setNewProduct({ ...newProduct, nombre: e.target.value })}
               required
             />
           </label>
@@ -101,9 +94,7 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
               className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
               min="1"
               value={newProduct.numero}
-              onChange={(e) =>
-                setNewProduct({ ...newProduct, numero: parseInt(e.target.value) || 1 })
-              }
+              onChange={(e) => setNewProduct({ ...newProduct, numero: parseInt(e.target.value) || 1 })}
             />
           </label>
 
@@ -112,9 +103,7 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
             <select
               className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
               value={newProduct.nombreEdicion}
-              onChange={(e) =>
-                setNewProduct({ ...newProduct, nombreEdicion: e.target.value })
-              }
+              onChange={(e) => setNewProduct({ ...newProduct, nombreEdicion: e.target.value })}
             >
               <option value="">Seleccione edición</option>
               {ediciones.map(edicion => (
@@ -130,9 +119,7 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
             <select
               className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
               value={newProduct.idColeccion}
-              onChange={(e) =>
-                setNewProduct({ ...newProduct, idColeccion: parseInt(e.target.value) })
-              }
+              onChange={(e) => setNewProduct({ ...newProduct, idColeccion: parseInt(e.target.value) })}
               required
             >
               {colecciones.map(coleccion => (
@@ -148,9 +135,7 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
             <select
               className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
               value={newProduct.esEspecial ? 'si' : 'no'}
-              onChange={(e) =>
-                setNewProduct({ ...newProduct, esEspecial: e.target.value === 'si' })
-              }
+              onChange={(e) => setNewProduct({ ...newProduct, esEspecial: e.target.value === 'si' })}
             >
               <option value="si">Sí</option>
               <option value="no">No</option>
@@ -162,9 +147,7 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
             <select
               className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
               value={newProduct.brilla ? 'si' : 'no'}
-              onChange={(e) =>
-                setNewProduct({ ...newProduct, brilla: e.target.value === 'si' })
-              }
+              onChange={(e) => setNewProduct({ ...newProduct, brilla: e.target.value === 'si' })}
             >
               <option value="si">Sí</option>
               <option value="no">No</option>
@@ -178,9 +161,7 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
               className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
               min="0"
               value={newProduct.cantidadDisp}
-              onChange={(e) =>
-                setNewProduct({ ...newProduct, cantidadDisp: parseInt(e.target.value) || 0 })
-              }
+              onChange={(e) => setNewProduct({ ...newProduct, cantidadDisp: parseInt(e.target.value) || 0 })}
               required
             />
           </label>
@@ -191,9 +172,7 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
               className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md h-24"
               placeholder="Ingrese descripción del producto"
               value={newProduct.descripcion}
-              onChange={(e) =>
-                setNewProduct({ ...newProduct, descripcion: e.target.value })
-              }
+              onChange={(e) => setNewProduct({ ...newProduct, descripcion: e.target.value })}
             />
           </label>
 
@@ -205,9 +184,7 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
               min="0"
               step="0.01"
               value={newProduct.precio}
-              onChange={(e) =>
-                setNewProduct({ ...newProduct, precio: parseFloat(e.target.value) || 0 })
-              }
+              onChange={(e) => setNewProduct({ ...newProduct, precio: parseFloat(e.target.value) || 0 })}
               required
             />
           </label>

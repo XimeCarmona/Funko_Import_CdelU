@@ -141,7 +141,7 @@ class Producto(models.Model): #!CRUD
     brilla = models.BooleanField(default=False)
     precio = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)]) #! agregar en forms
     cantidadDisp = models.IntegerField(validators=[MinValueValidator(0)])  
-    URLImagen = models.URLField(validators=[URLValidator()])
+    imagen = models.ImageField(upload_to='productos/', null=True, blank=True)     
     idColeccion = models.ForeignKey(Coleccion, on_delete=models.CASCADE,related_name='productos')
     precio_original = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], null=True, blank=True)
 

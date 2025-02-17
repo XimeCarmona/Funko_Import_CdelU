@@ -136,7 +136,7 @@ function Productos() {
               <tr key={producto.idProducto}>
                 <td className="px-4 py-2">
                   <img 
-                    src={producto.URLImagen} 
+                    src={producto.imagen} 
                     alt={producto.nombre} 
                     className="w-16 h-16 object-cover" 
                   />
