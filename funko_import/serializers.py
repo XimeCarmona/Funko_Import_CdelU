@@ -27,6 +27,7 @@ class DescuentoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Descuento
         fields = '__all__'
+        read_only_fields = ('codigoDescuento',)
 
 class ProductoSerializer(serializers.ModelSerializer):
     class Meta:

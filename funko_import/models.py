@@ -126,7 +126,8 @@ class Descuento(models.Model): #!CRUD
                 return nuevo_codigo
 
     def save(self, *args, **kwargs):
-        self.codigoDescuento = self.generar_codigo()
+        if not self.codigoDescuento:  # Solo generar código si es nuevo
+            self.codigoDescuento = self.generar_codigo()
         super().save(*args, **kwargs)
     
  #!que 2 productos no tengan el mismo numero si pertenecen a la misma coleccion

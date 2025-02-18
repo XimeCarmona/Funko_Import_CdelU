@@ -12,6 +12,7 @@ import Categorias from "./pages/admin/Categorias";
 import Pedidos from "./pages/admin/Pedidos";
 import Edicion from "./pages/admin/Edicion";
 import Perfil from "./pages/admin/AdPerfil";
+import Descuentos from "./pages/admin/Descuentos";
 
 // User
 import UserHome from "./pages/user/UserHome";
@@ -41,6 +42,7 @@ function App() {
           <Route path="pedidos" element={<Pedidos />} />
           <Route path="edicion" element={<Edicion />} />
           <Route path="perfil" element={<Perfil />} />
+          <Route path="descuento" element={<Descuentos />} />
           <Route path="*" element={<Navigate to="/admin" />} />
         </Route>
 

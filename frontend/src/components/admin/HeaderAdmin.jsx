@@ -31,6 +31,7 @@ const HeaderAdmin = () => {
                 <li><Link to="categorias">Categorías</Link></li> {/* Cambiar de <a href="/categorias"> a <Link to="categorias"> */}
                 <li><Link to="pedidos">Pedidos</Link></li> {/* Cambiar de <a href="/pedidos"> a <Link to="pedidos"> */}
                 <li><Link to="edicion">Edición</Link></li> {/* Cambiar de <a href="/edicion"> a <Link to="edicion"> */}
+                <li><Link to="descuento">Descuentos</Link></li>
               </ul>
             </div>
           )}
