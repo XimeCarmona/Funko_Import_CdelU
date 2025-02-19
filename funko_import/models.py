@@ -28,7 +28,7 @@ class Coleccion(models.Model):
 
     @property
     def cantidad(self):
-        return self.producto_set.count()
+        return self.productos.count()
 
     def clean(self):
         super().clean()
@@ -48,7 +48,7 @@ class Edicion(models.Model):
     
     @property
     def cantidad(self):
-        return self.producto_set.count()
+        return self.productos.count()
 
     def __str__(self):
         return self.nombre
@@ -145,6 +145,8 @@ class Producto(models.Model): #!CRUD
     imagen = models.ImageField(upload_to='productos/', null=True, blank=True)     
     idColeccion = models.ForeignKey(Coleccion, on_delete=models.CASCADE,related_name='productos')
     precio_original = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], null=True, blank=True)
+    idEdicion = models.ForeignKey(Edicion, on_delete=models.CASCADE, related_name='productos', default=1)
+
 
     def clean(self):
         if Producto.objects.filter(idColeccion=self.idColeccion, numero=self.numero).exclude(idProducto=self.idProducto).exists():

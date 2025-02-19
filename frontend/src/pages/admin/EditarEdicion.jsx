@@ -2,17 +2,15 @@ import React, { useState, useEffect } from 'react';
 
 function EditarEdicion({ edition, onCancel, onSave }) {
   const [nombre, setNombre] = useState(edition.nombre);
-  const [cantidad, setCantidad] = useState(edition.cantidad);
 
   // Actualiza los valores del formulario cuando la edición cambia
   useEffect(() => {
     setNombre(edition.nombre);
-    setCantidad(edition.cantidad);
   }, [edition]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const updatedEdition = { ...edition, nombre, cantidad };
+    const updatedEdition = { ...edition, nombre }; // Solo actualiza el nombre
     onSave(updatedEdition); // Pasa la edición editada a la función onSave
   };
 
@@ -28,16 +26,6 @@ function EditarEdicion({ edition, onCancel, onSave }) {
               id="nombre"
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
-              required
-            />
-          </div>
-          <div className="blockAE">
-            <label htmlFor="cantidad">Cantidad</label>
-            <input
-              type="number"
-              id="cantidad"
-              value={cantidad}
-              onChange={(e) => setCantidad(e.target.value)}
               required
             />
           </div>

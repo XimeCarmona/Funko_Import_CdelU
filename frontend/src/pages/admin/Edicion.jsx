@@ -99,7 +99,7 @@ function Edicion() {
             {filteredEditions.map((edition) => (
               <tr key={edition.id_edicion} className="border-t">
                 <td className="px-4 py-2">{edition.nombre}</td>
-                <td className="px-4 py-2">{edition.cantidad}</td>
+                <td className="px-4 py-2">{edition.cantidad || 0}</td> {/* Mostrar 0 si no hay productos */}
                 <td className="px-4 py-2">
                   <button
                     className="btn-edit"
@@ -122,7 +122,7 @@ function Edicion() {
 
       {isAdding && (
         <AgregarEdicion
-          onClose={() => setIsAdding(false)}
+          onCancel={() => setIsAdding(false)}
           onSave={handleAddEdition}
         />
       )}
@@ -130,7 +130,7 @@ function Edicion() {
       {isEditing && currentEdition && (
         <EditarEdicion
           edition={currentEdition}
-          onClose={() => setIsEditing(false)}
+          onCancel={() => setIsEditing(false)}
           onSave={handleEditEdition}
         />
       )}

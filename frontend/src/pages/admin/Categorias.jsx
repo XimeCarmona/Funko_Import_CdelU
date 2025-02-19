@@ -54,7 +54,6 @@ function Categorias() {
     }
   };
 
-    
   // Eliminar categoría
   const handleDeleteCategory = async (id) => {
     try {
@@ -100,7 +99,7 @@ function Categorias() {
             {filteredCategories.map((category) => (
               <tr key={category.idColeccion} className="border-t">
                 <td className="px-4 py-2">{category.nombre}</td>
-                <td className="px-4 py-2">{category.cantidad}</td>
+                <td className="px-4 py-2">{category.cantidad || 0}</td> {/* Mostrar 0 si no hay productos */}
                 <td className="px-4 py-2">
                   <button
                     className="btn-edit"

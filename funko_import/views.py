@@ -193,7 +193,7 @@ from google.auth.transport import requests as google_requests
 from .models import Usuario
 
 
-GOOGLE_CLIENT_ID = "CLIENT_ID"
+GOOGLE_CLIENT_ID = "308782491837-3ii9ji9967ectsmh546rqk866245rj4u.apps.googleusercontent.com"
 @csrf_exempt
 def google_login(request):
     if request.method != "POST":
