@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import '../App.css';
 
 const CompletarPerfil = () => {
   const navigate = useNavigate();
@@ -58,8 +59,8 @@ const CompletarPerfil = () => {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal">
+    <div className="modal-overlayCP">
+      <div className="modalCP">
         <h2>Completa tu perfil</h2>
         <form onSubmit={handleSubmit}>
           <input type="text" name="nombre" placeholder="Nombre" onChange={handleChange} required />

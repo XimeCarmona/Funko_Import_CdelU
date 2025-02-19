@@ -1,87 +1,90 @@
-import React, { useEffect, useState } from 'react';
-import FunkoCard from '../user/FunkoCard'
-import { obtenerFunkos } from '../../utils/api';
-import '../../App.css';
+import React, { useEffect, useState } from "react";
+import FunkoCard from "../user/FunkoCard";
+import "../../App.css";
 
-function GridFunkos() {
-  const [funkos, setFunkos] = useState([]);
-  const [sortedFunkos, setSortedFunkos] = useState([]);
+function GridFunkos({ searchTerm }) {
+  const [productos, setProductos] = useState([]);
+  const [sortedProductos, setSortedProductos] = useState([]);
   const [filterOption, setFilterOption] = useState("all");
 
-  // Cargar funkos al montar el componente
+  // Cargar productos desde la API de Django
   useEffect(() => {
-    obtenerFunkos().then((data) => {
-      setFunkos(data);
-      setSortedFunkos(data);
-    });
+    const fetchData = async () => {
+      try {
+        const respuesta = await fetch("http://localhost:8000/api/auth/obtener-productos/");
+        const data = await respuesta.json();
+        setProductos(data);
+        setSortedProductos(data);
+      } catch (error) {
+        console.error("Error al cargar los productos:", error);
+      }
+    };
+    fetchData();
   }, []);
 
-  const destacado = sortedFunkos[0];
-  const otrosFunkos = sortedFunkos.slice(1);
+  // Filtrar por término de búsqueda
+  const filteredProductos = sortedProductos.filter(producto =>
+    producto.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  // Ordenar funkos
-  const sortFunkos = (type) => {
-    let sorted = [...sortedFunkos];
-    if (type === "priceAsc") {
-      sorted.sort((a, b) => a.price - b.price);
-    } else if (type === "priceDesc") {
-      sorted.sort((a, b) => b.price - a.price);
-    } else if (type === "nameAsc") {
-      sorted.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (type === "nameDesc") {
-      sorted.sort((a, b) => b.name.localeCompare(a.name));
-    }
-    setSortedFunkos(sorted);
+  const destacado = filteredProductos.length > 0 ? filteredProductos[0] : null;
+  const otrosProductos = filteredProductos.length > 1 ? filteredProductos.slice(1) : filteredProductos;
+
+  // Ordenar productos
+  const sortProductos = (type) => {
+    let sorted = [...filteredProductos];
+    if (type === "priceAsc") sorted.sort((a, b) => a.precio - b.precio);
+    if (type === "priceDesc") sorted.sort((a, b) => b.precio - a.precio);
+    if (type === "nameAsc") sorted.sort((a, b) => a.nombre.localeCompare(b.nombre));
+    if (type === "nameDesc") sorted.sort((a, b) => b.nombre.localeCompare(a.nombre));
+    setSortedProductos(sorted);
   };
 
   // Filtrar por colección
-  const filterFunkos = (collection) => {
+  const filterProductos = (collection) => {
     if (collection === "all") {
-      setSortedFunkos(funkos);
+      setSortedProductos(productos);
     } else {
-      const filtered = funkos.filter((funko) => funko.collection === collection);
-      setSortedFunkos(filtered);
+      const filtrado = productos.filter((producto) => producto.idColeccion === collection);
+      setSortedProductos(filtrado);
     }
     setFilterOption(collection);
   };
 
   // Obtener colecciones únicas
   const getUniqueCollections = () => {
-    const collections = funkos.map((funko) => funko.collection);
+    const collections = productos.map((producto) => producto.idColeccion);
     return ["all", ...new Set(collections)];
   };
 
   return (
     <div className="grid-container">
-
-      {destacado && (
+      {/* Mostrar producto destacado si no hay filtros activos ni búsqueda */}
+      {destacado && searchTerm === "" && filterOption === "all" && (
         <div className="featured-funko">
           <div className="featured-image">
-            <img src={destacado.image} alt={destacado.name} />
+            <img src={destacado.imagen} alt={destacado.nombre} />
           </div>
           <div className="featured-description">
-            <h2>{destacado.name}</h2>
-            <p>{destacado.description}</p>
+            <h2>{destacado.nombre}</h2>
+            <p>{destacado.descripcion}</p>
             <button className="btn-see-more">Ver más</button>
           </div>
         </div>
       )}
-      
+
       <div className="nuestros-prod">
         <p>Nuestros productos</p>
       </div>
+
       {/* Filtros */}
       <div className="filters">
         <span>Ordenar por: </span>
-        <button onClick={() => sortFunkos("nameAsc")}>A - Z</button>
-        <button onClick={() => sortFunkos("nameDesc")}>Z - A</button>
-        <button onClick={() => sortFunkos("priceAsc")}>Menor Precio</button>
-        <button onClick={() => sortFunkos("priceDesc")}>Mayor Precio</button>
-        
-        <select
-          onChange={(e) => filterFunkos(e.target.value)}
-          value={filterOption}
-        >
+        <button onClick={() => sortProductos("nameAsc")}>A - Z</button>
+        <button onClick={() => sortProductos("nameDesc")}>Z - A</button>
+        <button onClick={() => sortProductos("priceAsc")}>Menor Precio</button>
+        <button onClick={() => sortProductos("priceDesc")}>Mayor Precio</button>
+        <select onChange={(e) => filterProductos(e.target.value)} value={filterOption}>
           {getUniqueCollections().map((col, index) => (
             <option key={index} value={col}>
               {col === "all" ? "Todas las Colecciones" : col}
@@ -90,14 +93,12 @@ function GridFunkos() {
         </select>
       </div>
 
-      {/* Grilla de Funkos */}
+      {/* Grilla de Productos */}
       <div className="funkos-grid">
-        {otrosFunkos.length > 0 ? (
-          otrosFunkos.map((funko) => (
-            <FunkoCard key={funko.id} funko={funko} />
-          ))
+        {otrosProductos.length > 0 ? (
+          otrosProductos.map((producto) => <FunkoCard key={producto.idProducto} funko={producto} />)
         ) : (
-          <p>No hay funkos disponibles.</p>
+          <p>No hay productos disponibles.</p>
         )}
       </div>
     </div>

@@ -20,6 +20,8 @@ import Funko from "./pages/user/Funko";
 import Cart from "./pages/user/Cart";
 import Favorites from "./pages/user/Favorites";
 import PerfilUser from "./pages/user/PerfilUser";
+import ShippingMethod from "./components/user/ShippingMethod";
+import PaymentMethod from "./components/user/PaymentMethod";
 
 function App() {
   return (
@@ -54,6 +56,8 @@ function App() {
           <Route path="favorites" element={<Favorites />} />
           <Route path="perfil" element={<PerfilUser />} />
           <Route path="*" element={<Navigate to="/user" />} />
+          <Route path="shipping" element={<ShippingMethod />} />
+          <Route path="payment" element={<PaymentMethod />} />
         </Route>
 
         {/* Ruta por defecto */}

@@ -57,7 +57,6 @@ const HeaderAdmin = () => {
             {isUserMenuOpen && (
               <div className="dropdown-user absolute right-0 mt-2 bg-white border rounded shadow-md">
                 <ul>
-                  <li><Link to="/perfil" className="block px-4 py-2">Mi Perfil</Link></li> {/* Cambiar de <a href="/perfil"> a <Link to="/perfil"> */}
                   <li><a href="/" onClick={handleLogout} className="block px-4 py-2">Cerrar Sesión</a></li>
                 </ul>
               </div>

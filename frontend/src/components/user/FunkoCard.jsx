@@ -4,21 +4,19 @@ import { Link } from "react-router-dom";
 function FunkoCard({ funko }) {
   const [isFavorite, setIsFavorite] = useState(false);
 
-  // Cargar favoritos desde localStorage al cargar el componente
   useEffect(() => {
     const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
-    if (favorites.some((f) => f.id === funko.id)) {
+    if (favorites.some((f) => f.idProducto === funko.idProducto)) {
       setIsFavorite(true);
     }
-  }, [funko.id]);
+  }, [funko.idProducto]);
 
-  // Alternar favorito
   const toggleFavorite = (e) => {
-    e.stopPropagation();  // Evitar que el click pase al contenedor padre
+    e.stopPropagation();
     let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
 
     if (isFavorite) {
-      favorites = favorites.filter((f) => f.id !== funko.id);
+      favorites = favorites.filter((f) => f.idProducto !== funko.idProducto);
     } else {
       favorites.push(funko);
     }
@@ -27,21 +25,32 @@ function FunkoCard({ funko }) {
     setIsFavorite(!isFavorite);
   };
 
+  // Construye la URL completa de la imagen
+  const imageUrl = funko.imagen 
+  ? `http://localhost:8000/media/productos/${funko.imagen}`
+  : "https://via.placeholder.com/150";
+
   return (
     <div className="funko-card">
-      {/* Icono de favorito en esquina superior derecha */}
       <button
         onClick={toggleFavorite}
-        className={'fav-btn ${isFavorite ? "active" : ""}'}
+        className={`fav-btn ${isFavorite ? "active" : ""}`}
       >
         {isFavorite ? "❤️" : "🤍"}
       </button>
 
-      <img src={funko.image} alt={funko.name} />
-      <h3>{funko.name}</h3>
-      <p>{funko.price} USD</p>
+      <img 
+        src={imageUrl} 
+        alt={funko.nombre} 
+        className="funko-image" 
+        onError={(e) => {
+          e.target.src = "https://via.placeholder.com/150";  // Imagen de respaldo si falla la carga
+        }}
+      />
+      <h3>{funko.nombre}</h3>
+      <p>{funko.precio} USD</p>
 
-      <Link to={`/funko/${funko.id}`}>
+      <Link to={`/user/funko/${funko.id}`}>
         <button className="buy-button">Comprar</button>
       </Link>
     </div>

@@ -1,77 +1,52 @@
-import React from 'react';
-import '../../Admin.css'
+import React, { useEffect, useState } from "react";
+import { FaShoppingCart, FaBox, FaUsers, FaTrophy } from "react-icons/fa";
+import "../../Admin.css";
 
 function AdminHome() {
+  const [data, setData] = useState({
+    ventas_totales: 0,
+    productos_activos: 0,
+    clientes_activos: 0,
+    producto_mas_vendido: "Cargando...",
+  });
+
+  useEffect(() => {
+    fetch("http://localhost:8000/api/auth/admin-dashboard-data/")
+      .then((response) => response.json())
+      .then((json) => setData(json))
+      .catch((error) => console.error("Error al obtener datos:", error));
+  }, []);
+
   return (
-    <div className="home-container">
-      <div className="row">
-        <div className="card blue">Ventas Totales</div>
-        <div className="card green">Productos Activos</div>
-        <div className="card yellow">Clientes Activos</div>
-      </div>
-      <div className="row">
-        <div className="card purple">Productos Más Vendidos</div>
-        <div className="card red">Clientes Recientes</div>
+    <div className="main-content">
+      <div className="home-container">
+        <div className="row">
+          <div className="card blue">
+            <FaShoppingCart className="card-icon" />
+            <h2>Ventas Totales</h2>
+            <p>${data.ventas_totales}</p>
+          </div>
+          <div className="card green">
+            <FaBox className="card-icon" />
+            <h2>Productos Activos</h2>
+            <p>{data.productos_activos}</p>
+          </div>
+          <div className="card yellow">
+            <FaUsers className="card-icon" />
+            <h2>Clientes Activos</h2>
+            <p>{data.clientes_activos}</p>
+          </div>
+        </div>
+        <div className="row">
+          <div className="card purple">
+            <FaTrophy className="card-icon" />
+            <h2>Producto MÃ¡s Vendido</h2>
+            <p>{data.producto_mas_vendido}</p>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
 export default AdminHome;
-
-// import React from 'react';
-// import '../App.css';
-
-// function Home() {
-//   return (
-//     <div className="home-container">
-//       <div className="row">
-//         <div className="card blue">
-//           <h3>Ventas Totales</h3>
-//           <p>$26.553,89</p>
-//         </div>
-//         <div className="card green">
-//           <h3>Productos Activos</h3>
-//           <p>+80</p>
-//         </div>
-//         <div className="card yellow">
-//           <h3>Clientes Activos</h3>
-//           <p>+500</p>
-//         </div>
-//       </div>
-//       <div className="row">
-//         <div className="card purple">
-//           <h3>Productos Más Vendidos</h3>
-//           <ul>
-//             <li>Nombre: Funko Pop Spiderman</li>
-//             <li>Colección: Marvel</li>
-//             <li>Ventas: 1.200 unidades</li>
-//           </ul>
-//         </div>
-//         <div className="card red">
-//           <h3>Clientes Recientes</h3>
-//           <ul>
-//             <li>Nombre: Juan Pérez Fecha: 25/12/2024</li>
-//           </ul>
-//           <ul>
-//             <li>Nombre: Laura Gómez Fecha: 27/12/2024</li>
-//           </ul>
-//           <ul>
-//             <li>Nombre: Ximena Carmona Fecha: 27/12/2024</li>
-//           </ul>
-//           <ul>
-//             <li>Nombre: Thomas Carotta Fecha: 27/12/2024</li>
-//           </ul>
-//           <ul>
-//             <li>Nombre: Axel Schenfeld Fecha: 27/12/2024</li>
-//           </ul>
-//           <ul>
-//             <li>Nombre: Victoria Valenzuela Fecha: 27/12/2024</li>
-//           </ul>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default Home;
