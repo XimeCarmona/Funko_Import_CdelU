@@ -1,5 +1,5 @@
 from django import forms
-from .models import Usuario, Coleccion, Descuento, Producto, Promocion, IngresoStock, PeticionProducto, ResenaComentario, Pregunta 
+from .models import Usuario, Coleccion, Descuento, Producto, Promocion, IngresoStock, PeticionProducto, ResenaComentario, Pregunta, Factura, LineaFactura 
 from django.core.exceptions import ValidationError
 from datetime import datetime
 
@@ -69,7 +69,6 @@ class productoForm(forms.ModelForm):
                 raise ValidationError('La cantidad disponible debe ser mayor o igual a 0.')
 
         return cleaned_data
-
 class promocionForm(forms.ModelForm):
     class Meta:
         model = Promocion
@@ -139,3 +138,16 @@ class RespuestaForm(forms.ModelForm):
     class Meta:
         model = Pregunta
         fields = ['respuesta']
+
+class FacturaForm(forms.ModelForm):
+    class Meta:
+        model = Factura
+        fields = '__all__'  # O puedes especificar campos como ['cliente', 'fecha', 'total']
+        widgets = {
+            'fecha': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+class LineaFacturaForm(forms.ModelForm):
+    class Meta:
+        model = LineaFactura
+        fields = '__all__'  # O especificar campos como ['factura', 'producto', 'cantidad', 'precio']

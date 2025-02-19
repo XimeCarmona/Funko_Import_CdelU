@@ -107,3 +107,13 @@ class EdicionSerializer(serializers.ModelSerializer):
 
     def get_cantidad(self, obj):
         return obj.cantidad  
+    
+class FacturaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Factura
+        fields = '__all__'
+
+class LineaFacturaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LineaFactura
+        fields = '__all__'

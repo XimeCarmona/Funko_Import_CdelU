@@ -137,7 +137,6 @@ class Producto(models.Model): #!CRUD
     idProducto = models.BigAutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
     numero = models.IntegerField(validators=[MinValueValidator(1)])
-    # nombreEdicion = models.CharField(max_length=100, null=True)
     esEspecial = models.BooleanField(default=False)
     descripcion = models.CharField(max_length=255)
     brilla = models.BooleanField(default=False)

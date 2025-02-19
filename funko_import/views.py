@@ -12,6 +12,9 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from rest_framework.parsers import MultiPartParser,FormParser,JSONParser
 
+from django.db.models import Sum, Count
+from django.conf import settings
+
 # Create your views here.
 
 #CRUDS
@@ -40,6 +43,13 @@ class ProductoView(viewsets.ModelViewSet):
     serializer_class = ProductoSerializer
     queryset = Producto.objects.all()
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class PromocionView(viewsets.ModelViewSet):
     serializer_class = PromocionSerializer
     queryset = Promocion.objects.all()
@@ -51,6 +61,14 @@ class resenaComentarioView(viewsets.ModelViewSet):
 class preguntaView(viewsets.ModelViewSet):
     serializer_class = PreguntaSerializer
     queryset = Pregunta.objects.all()
+
+class facturaView(viewsets.ModelViewSet):
+    serializer_class = FacturaSerializer
+    queryset = Factura.objects.all()
+
+class lineaFacturaView(viewsets.ModelViewSet):
+    serializer_class = LineaFacturaSerializer
+    queryset = LineaFactura.objects.all()
 
 #GET ALL
 
@@ -99,6 +117,16 @@ def getPreguntas(request):
     serializer = PreguntaSerializer(preguntas, many=True)
     return JsonResponse(serializer.data, safe=False)
 
+def getFactura(request):
+    facturas = Factura.objects.all()
+    serializer = FacturaSerializer(facturas, many=True)
+    return JsonResponse(serializer.data, safe=False)
+
+def getLineaFactura(request):
+    lineafacturas = LineaFactura.objects.all()
+    serializer = LineaFacturaSerializer(lineafacturas, many=True)
+    return JsonResponse(serializer.data, safe=False)
+
 #REST
 def UsuariosRest (request):
     usuario=getUsuarios()
@@ -135,6 +163,14 @@ def PreguntasRest (request):
 def edicionRest (request):
     edicion=getEdiciones()
     return JsonResponse(edicion)
+
+def FacturaRest (request):
+    factura=getFactura()
+    return JsonResponse(factura)
+
+def LineaFacturaRest (request):
+    lineafactura=getFactura()
+    return JsonResponse(lineafactura)
 
 #MercadoPago
 # Credenciales de acceso (Access Token)
@@ -285,3 +321,119 @@ def completar_perfil(request):
 
     except json.JSONDecodeError:
         return JsonResponse({"error": "Formato JSON inválido"}, status=400)
+
+@csrf_exempt
+def user_data(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "Método no permitido"}, status=405)
+
+    email = request.GET.get("email")
+    if not email:
+        return JsonResponse({"error": "Correo no proporcionado"}, status=400)
+
+    usuario = Usuario.objects.filter(correo=email).first()
+    if not usuario:
+        return JsonResponse({"error": "Usuario no encontrado"}, status=404)
+
+    user_data = {
+        "nombre": usuario.nombre,
+        "apellido": usuario.apellido,
+        "correo": usuario.correo,
+        "telefono": usuario.telefono,
+        "direccion": usuario.direccion,
+        # "ciudad": usuario.ciudad,
+        # "provincia": usuario.provincia,
+        # "codigoPostal": usuario.codigoPostal,
+    }
+
+    return JsonResponse({"user": user_data})
+
+@csrf_exempt
+def update_profile(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Método no permitido"}, status=405)
+
+    try:
+        data = json.loads(request.body.decode('utf-8'))  # Asegurar decodificación correcta
+        print("Datos recibidos en update_profile:", data)  # Ver qué llega realmente
+        email = data.get("correo")
+        nombre = data.get("nombre")
+        apellido = data.get("apellido")
+        telefono = data.get("telefono")
+        direccion = data.get("direccion")
+        # ciudad = data.get("ciudad")
+        # provincia = data.get("provincia")
+        # codigoPostal = data.get("codigoPostal")
+
+        usuario = Usuario.objects.filter(correo=email).first()
+        if not usuario:
+            return JsonResponse({"error": "Usuario no encontrado"}, status=404)
+
+        if nombre:
+            usuario.nombre = nombre
+        if apellido:
+            usuario.apellido = apellido
+        if telefono:
+            usuario.telefono = telefono
+        if direccion:
+            usuario.direccion = direccion
+        # if ciudad:
+        #     usuario.ciudad = ciudad
+        # if provincia:
+        #     usuario.provincia = provincia
+        # if codigoPostal:
+        #     usuario.codigoPostal = codigoPostal
+
+        usuario.save()
+
+        return JsonResponse({"message": "Perfil actualizado correctamente"})
+
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Formato JSON inválido"}, status=400)
+
+from django.db.models import Sum, Count
+
+def admin_dashboard_data(request):
+    ventas_totales = Factura.objects.aggregate(total_ventas=Sum('pago_total'))['total_ventas'] or 0
+    productos_activos = Producto.objects.count()
+    clientes_activos = Usuario.objects.count()
+
+    # Obtener el producto más vendido
+    producto_mas_vendido = LineaFactura.objects.values('idProducto__nombre') \
+        .annotate(total_vendido=Sum('cantidad')) \
+        .order_by('-total_vendido') \
+        .first()
+
+    return JsonResponse({
+        'ventas_totales': ventas_totales,
+        'productos_activos': productos_activos,
+        'clientes_activos': clientes_activos,
+        'producto_mas_vendido': producto_mas_vendido['idProducto__nombre'] if producto_mas_vendido else 'N/A'
+    })
+
+from django.conf import settings
+
+
+def obtener_productos(request):
+    productos = Producto.objects.all().values(
+        "idProducto", 
+        "nombre", 
+        "numero", 
+        "idEdicion", 
+        "esEspecial", 
+        "descripcion", 
+        "brilla", 
+        "precio", 
+        "cantidadDisp", 
+        "imagen", 
+        "idColeccion", 
+        "precio_original"
+    )
+    
+    productos_list = []
+    for producto in productos:
+        if producto["imagen"]:
+            producto["imagen"] = request.build_absolute_uri(settings.MEDIA_URL + producto["imagen"])
+        productos_list.append(producto)
+
+    return JsonResponse(productos_list, safe=False)
