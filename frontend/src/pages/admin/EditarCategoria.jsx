@@ -28,22 +28,6 @@ function EditarCategoria({ category, onClose, onEditCategory }) {
             />
           </label>
         </div>
-        <div className="blockAC">
-          <label>
-            Cantidad:
-            <input
-              type="number"
-              min="0"
-              value={updatedCategory.cantidad}
-              onChange={(e) =>
-                setUpdatedCategory({
-                  ...updatedCategory,
-                  cantidad: parseInt(e.target.value, 10) || 0,
-                })
-              }
-            />
-          </label>
-        </div>
         <div className="modal-actionsAC">
           <button className="btn-cancelAC" onClick={onClose}>
             Cancelar

@@ -11,12 +11,14 @@ class UsuarioSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ColeccionSerializer(serializers.ModelSerializer):
-    cantidad = serializers.ReadOnlyField()
+    cantidad = serializers.SerializerMethodField()
+
     class Meta:
         model = Coleccion
         fields = ['idColeccion', 'nombre', 'cantidad']
 
-    cantidad = serializers.ReadOnlyField()
+    def get_cantidad(self, obj):
+        return obj.cantidad 
 
 class CarritoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -95,7 +97,12 @@ class CodigoSeguimientoSerializer(serializers.ModelSerializer):
         model = CodigoSeguimiento
         fields = '__all__'
 
-class EdicionSerializer (serializers.ModelSerializer):
+class EdicionSerializer(serializers.ModelSerializer):
+    cantidad = serializers.SerializerMethodField()
+
     class Meta:
         model = Edicion
         fields = ['id_edicion', 'nombre', 'cantidad']
+
+    def get_cantidad(self, obj):
+        return obj.cantidad  
