@@ -7,6 +7,7 @@ from django.utils import timezone
 
 import string
 import random
+from decimal import Decimal
 
 # Obtener nombre y apellido concatenados
 
@@ -136,11 +137,11 @@ class Producto(models.Model): #!CRUD
     idProducto = models.BigAutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
     numero = models.IntegerField(validators=[MinValueValidator(1)])
-    nombreEdicion = models.CharField(max_length=100, null=True)
+    # nombreEdicion = models.CharField(max_length=100, null=True)
     esEspecial = models.BooleanField(default=False)
     descripcion = models.CharField(max_length=255)
     brilla = models.BooleanField(default=False)
-    precio = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)]) #! agregar en forms
+    precio = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.00'))]) #! agregar en forms
     cantidadDisp = models.IntegerField(validators=[MinValueValidator(0)])  
     imagen = models.ImageField(upload_to='productos/', null=True, blank=True)     
     idColeccion = models.ForeignKey(Coleccion, on_delete=models.CASCADE,related_name='productos')

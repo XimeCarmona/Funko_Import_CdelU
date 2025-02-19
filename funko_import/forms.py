@@ -11,6 +11,11 @@ class UsuarioForm(forms.ModelForm):
 class ColeccionForm(forms.ModelForm):
     class Meta:
         model = Coleccion
+        fields = ['nombre']
+
+class EdicionForm(forms.ModelForm):
+    class Meta:
+        model = Coleccion
         fields = ['nombre']  
 
 class DescuentoForm(forms.ModelForm):
@@ -50,7 +55,7 @@ class DescuentoForm(forms.ModelForm):
 class productoForm(forms.ModelForm):
     class Meta:
         model = Producto
-        fields = ['nombre','numero','nombreEdicion','esEspecial','descripcion','brilla','precio','cantidadDisp','imagen','idColeccion']
+        fields = ['nombre','numero','esEspecial','descripcion','brilla','precio','cantidadDisp','imagen','idColeccion']
         widgets = {
             'idColeccion': forms.Select(attrs={'class': 'form-control'}),
             }

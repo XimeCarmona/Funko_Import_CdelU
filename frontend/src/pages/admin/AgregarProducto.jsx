@@ -4,7 +4,7 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
   const [newProduct, setNewProduct] = useState({
     nombre: '',
     numero: 1,
-    nombreEdicion: '',
+    idEdicion: '',
     esEspecial: false,
     descripcion: '',
     brilla: false,
@@ -46,7 +46,7 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
     const formData = new FormData();
     formData.append('nombre', newProduct.nombre);
     formData.append('numero', newProduct.numero);
-    formData.append('nombreEdicion', newProduct.nombreEdicion);
+    formData.append('idEdicion', newProduct.idEdicion);
     formData.append('esEspecial', newProduct.esEspecial ? 'True' : 'False');
     formData.append('descripcion', newProduct.descripcion);
     formData.append('brilla', newProduct.brilla ? 'True' : 'False');
@@ -101,16 +101,16 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
           <label className="block">
             <span className="text-gray-700">Edición:</span>
             <select
-              className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
-              value={newProduct.nombreEdicion}
-              onChange={(e) => setNewProduct({ ...newProduct, nombreEdicion: e.target.value })}
-            >
-              <option value="">Seleccione edición</option>
-              {ediciones.map(edicion => (
-                <option key={edicion.id_edicion} value={edicion.nombre}>
-                  {edicion.nombre}
-                </option>
-              ))}
+                className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
+                value={newProduct.idEdicion} // Usar idEdicion en lugar de nombreEdicion
+                onChange={(e) => setNewProduct({ ...newProduct, idEdicion: e.target.value })}
+              >
+                <option value="">Seleccione edición</option>
+                {ediciones.map(edicion => (
+                  <option key={edicion.id_edicion} value={edicion.id_edicion}> {/* Enviar el ID */}
+                    {edicion.nombre}
+                  </option>
+                ))}
             </select>
           </label>
 

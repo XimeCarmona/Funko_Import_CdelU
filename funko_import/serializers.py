@@ -32,6 +32,7 @@ class DescuentoSerializer(serializers.ModelSerializer):
         read_only_fields = ('codigoDescuento',)
 
 class ProductoSerializer(serializers.ModelSerializer):
+    idEdicion = serializers.PrimaryKeyRelatedField(queryset=Edicion.objects.all())
     class Meta:
         model = Producto
         fields = '__all__'
