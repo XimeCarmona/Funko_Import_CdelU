@@ -29,7 +29,7 @@ function FunkoCard({ producto }) {
 
   // Construye la URL completa de la imagen
   const imageUrl = producto.imagen 
-    ? `http://localhost:8000/media/productos/${producto.imagen}`
+    ? producto.imagen
     : "https://via.placeholder.com/150";
 
   return (

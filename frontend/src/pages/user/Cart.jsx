@@ -16,48 +16,39 @@ const Cart = () => {
   useEffect(() => {
     const fetchCart = async () => {
       try {
-        const token = localStorage.getItem("userToken");
-        if (!token) {
-          navigate("/login");
+        const userEmail = localStorage.getItem("userEmail"); // Obtener el correo desde localStorage
+        if (!userEmail) {
+          alert("Usuario no autenticado");
           return;
         }
-
+  
         const response = await fetch("http://localhost:8000/api/auth/obtener-carrito/", {
+          method: "GET",
           headers: {
-            "Authorization": `Token ${token}`
-          }
+            "userEmail": userEmail,  // Usar el correo en lugar de el token
+          },
         });
-
-        if (response.status === 401) {
-          localStorage.removeItem("userToken");
-          navigate("/login");
+  
+        const data = await response.json();
+        if (data.error) {
+          alert(data.error);
+          setLoading(false);
           return;
         }
-
-        const data = await response.json();
-        
-        if (response.ok) {
-          const productos = data.productos || [];
-          const cartWithQuantity = productos.map(item => ({
-            ...item,
-            quantity: item.cantidad,
-            precio: parseFloat(item.precio)
-          }));
-          setCart(cartWithQuantity);
-          calcularTotal(cartWithQuantity);
-        } else {
-          alert(data.error || "Error al cargar carrito");
-        }
-        
+  
+        const cartWithQuantity = data.productos.map((item) => ({ ...item, quantity: 1 }));
+        setCart(cartWithQuantity);
+        calcularTotal(cartWithQuantity);
         setLoading(false);
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Error al cargar el carrito:", error);
         setLoading(false);
       }
     };
-
+  
     fetchCart();
   }, []);
+  
 
   const calcularTotal = (cart) => {
     const totalAmount = cart.reduce((acc, item) => acc + item.precio * item.quantity, 0);
@@ -117,7 +108,12 @@ const Cart = () => {
             {cart.map((item) => (
               <div key={item.idProducto} className="cart-item">
                 <div className="cart-product">
-                  <img src={item.imagen} alt={item.nombre} className="cart-item-img" />
+                <img
+                  src={`http://localhost:8000${item.imagen}`}  // Concatenando la URL base con la imagen
+                  alt={item.nombre}
+                  className="cart-item-img"
+                  onError={(e) => (e.target.src = "https://via.placeholder.com/150")} // Imagen de reemplazo si hay un error
+                />
                   <span>{item.nombre}</span>
                 </div>
                 <div>${item.precio}</div>

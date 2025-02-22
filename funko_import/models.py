@@ -66,7 +66,7 @@ class Edicion(models.Model):
 #!que no haya mas de 2 carritos con el mismo usuario
 class carrito(models.Model): #!CRUD
     idCarrito = models.BigAutoField(primary_key=True)
-    total = models.FloatField(validators=[MinValueValidator(0)])
+    total = models.FloatField(validators=[MinValueValidator(0)], default=0.0)
     idUsuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
 
     def calcular_total(self):

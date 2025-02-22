@@ -24,8 +24,8 @@ function Favorites() {
         {/* Grilla de favoritos */}
         <div className="funkos-grid">
           {favorites.length > 0 ? (
-            favorites.map((funko) => (
-              <FunkoCard key={funko.id} funko={funko} />
+            favorites.map((producto) => (
+              <FunkoCard key={producto.idProducto} producto={producto} />
             ))
           ) : (
             <p>No tienes funkos en favoritos.</p>

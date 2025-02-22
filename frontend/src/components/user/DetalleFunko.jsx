@@ -2,23 +2,42 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 function DetalleFunko() {
-  const { idProducto } = useParams();
+  const { idProducto } = useParams(); // Obtener el ID desde la URL
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [userToken, setUserToken] = useState(localStorage.getItem("userToken"));
+  const [userEmail, setUserEmail] = useState(localStorage.getItem("userEmail"));
+  
 
-  // Sincronizar token al montar el componente
   useEffect(() => {
-    const token = localStorage.getItem("userToken");
-    setUserToken(token || null);
+    const handleStorageChange = () => {
+      const email = localStorage.getItem("userEmail");
+      setUserEmail(email);
+      console.log("Storage cambiado. Nuevo email:", email); // Depuración
+    };
+
+    handleStorageChange(); 
+
+    window.addEventListener("storage", handleStorageChange);
+
+    // Limpiar el event listener al desmontarse el componente
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
-  // Obtener detalles del producto
+  // Verificación del valor de userToken
   useEffect(() => {
+    console.log("User email:", userEmail); // Verificar si se establece correctamente
+  }, [userEmail]);
+
+  useEffect(() => {
+    // Convertir idProducto a número
     const id = parseInt(idProducto, 10);
-    
+
+    // Validar que idProducto sea un número válido
     if (isNaN(id) || id <= 0) {
+      console.error("ID de producto inválido:", id);
       setError("ID de producto inválido");
       setLoading(false);
       return;
@@ -26,20 +45,16 @@ function DetalleFunko() {
 
     const fetchProducto = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/api/auth/obtener-detalle-producto/${id}/`);
-        
-        if (!response.ok) {
-          throw new Error(`Error ${response.status}: Producto no encontrado`);
+        // Usar 'id' en lugar de 'idProducto'
+        const respuesta = await fetch(`http://localhost:8000/api/auth/obtener-detalle-producto/${id}/`);
+        if (!respuesta.ok) {
+          throw new Error("Producto no encontrado");
         }
-
-        const data = await response.json();
-        setProducto({
-          ...data,
-          precio: parseFloat(data.precio).toFixed(2)  // Formatear precio
-        });
-      } catch (err) {
-        setError(err.message);
-        console.error("Error fetching producto:", err);
+        const data = await respuesta.json();
+        setProducto(data);
+      } catch (error) {
+        console.error("Error al cargar el producto:", error);
+        setError(error.message);
       } finally {
         setLoading(false);
       }
@@ -48,82 +63,57 @@ function DetalleFunko() {
     fetchProducto();
   }, [idProducto]);
 
-  // Añadir al carrito
   const handleAddToCart = async () => {
-    if (!userToken) {
-      alert("🔒 Por favor, inicia sesión para añadir productos al carrito");
+    if (!userEmail) {
+      alert("Por favor, inicia sesión para añadir productos al carrito");
       return;
     }
 
     try {
-      const response = await fetch("http://localhost:8000/api/auth/add-to-cart/", {
+      const respuesta = await fetch("http://localhost:8000/api/auth/add-to-cart/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Token ${userToken}`
         },
         body: JSON.stringify({
+          correo: userEmail,  // Asegúrate de enviar 'correo' y no 'user_token'
           idProducto: producto.idProducto,
-          cantidad: 1
-        })
+          cantidad: 1, // Puedes ajustar la cantidad según sea necesario
+        }),
       });
 
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || "❌ Error al procesar la solicitud");
-      }
-
+      const data = await respuesta.json();
       if (data.success) {
-        alert("🛒 Producto añadido al carrito");
-        // Opcional: Actualizar estado global del carrito aquí
+        alert("Producto añadido al carrito");
       } else {
-        alert(data.message || "⚠️ Ocurrió un error inesperado");
+        alert(data.message || "Error al añadir producto");
       }
-    } catch (err) {
-      console.error("Error en add-to-cart:", err);
-      alert(err.message || "🔥 Error crítico al contactar al servidor");
+    } catch (error) {
+      console.error("Error al añadir al carrito:", error);
+      alert("Hubo un problema al añadir el producto");
     }
   };
 
-  // Estados de carga y error
-  if (loading) return <div className="loading">🌀 Cargando detalles del funko...</div>;
-  if (error) return <div className="error">⛔ Error: {error}</div>;
-  if (!producto) return <div className="error">😞 Producto no encontrado</div>;
 
-  // Renderizado principal
+  if (loading) return <p>Cargando...</p>;
+  if (error) return <p>Error: {error}</p>;
+  if (!producto) return <p>Producto no encontrado.</p>;
+
   return (
-    <div className="detalle-funko-container">
-      <div className="imagen-container">
-        <img 
-          src={producto.imagen || "https://via.placeholder.com/300"} 
-          alt={producto.nombre}
-          onError={(e) => e.target.src = "https://via.placeholder.com/300"}
-          className="funko-image"
-        />
-      </div>
-      
-      <div className="info-container">
-        <h1 className="nombre-funko">{producto.nombre}</h1>
-        
-        <div className="detalles-seccion">
-          <p className="precio">💵 Precio: ${producto.precio} USD</p>
-          <p className="stock">📦 Disponibles: {producto.cantidadDisp} unidades</p>
-          <p className="edicion">
-            {producto.esEspecial ? "🌟 Edición especial" : "📘 Edición estándar"}
-          </p>
-        </div>
+    console.log(producto),
 
-        <p className="descripcion">{producto.descripcion}</p>
-
-        <button 
-          onClick={handleAddToCart}
-          className="btn-add-to-cart"
-          disabled={producto.cantidadDisp <= 0}
-        >
-          {producto.cantidadDisp > 0 ? "➕ Añadir al carrito" : "🚫 Agotado"}
-        </button>
-      </div>
+    <div className="detalle-funko">
+      <img 
+        src={`http://localhost:8000${producto.imagen}`} 
+        alt={producto.nombre} 
+        onError={(e) => (e.target.src = "https://via.placeholder.com/150")} 
+      />
+      <h2>{producto.nombre}</h2>
+      <p>{producto.descripcion}</p>
+      <p>Precio: {producto.precio} USD</p>
+      <p>Cantidad disponible: {producto.cantidadDisp}</p>
+      <p>{producto.esEspecial ? "Edición especial" : "Edición estándar"}</p>
+      <button onClick={handleAddToCart}>Añadir al carrito</button>
     </div>
   );
 }

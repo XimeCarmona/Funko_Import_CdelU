@@ -182,3 +182,17 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ],
 }
+
+
+import os
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+CORS_ALLOW_HEADERS = [
+    'content-type',
+    'authorization',
+    'useremail',  # Permite el encabezado useremail
+]
+
+CORS_ALLOW_CREDENTIALS = True

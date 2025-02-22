@@ -26,7 +26,7 @@ const LoginPage = () => {
           }
   
           localStorage.setItem("user_token", response.credential);
-          localStorage.setItem("user_email", data.user.email);
+          localStorage.setItem("userEmail", data.user.email);
   
           // Redirigir según el rol y si es un nuevo usuario
           if (data.user.first_time) {

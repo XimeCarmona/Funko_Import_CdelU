@@ -487,16 +487,16 @@ def add_to_cart(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            user_token = data.get("user_token")
+            correo = data.get("correo")
             id_producto = data.get("idProducto")
             cantidad = data.get("cantidad")
 
-            if not user_token or not id_producto or not cantidad:
+            if not id_producto or not cantidad or not correo:
                 return JsonResponse({"success": False, "message": "Datos incompletos"}, status=400)
 
-            # Verificar si el usuario existe a partir del token
+            # Verificar si el usuario existe a partir del correo
             try:
-                usuario = Usuario.objects.get(token=user_token)
+                usuario = Usuario.objects.get(correo=correo)
             except Usuario.DoesNotExist:
                 return JsonResponse({"success": False, "message": "Usuario no encontrado"}, status=404)
 
@@ -509,15 +509,15 @@ def add_to_cart(request):
             # Obtener o crear el carrito del usuario
             carrito_usuario, created = carrito.objects.get_or_create(idUsuario=usuario)
 
-            # Verificar si el producto ya está en el carrito
-            producto_carrito = ProductoCarrito.objects.filter(carrito=carrito_usuario, producto=producto).first()
-            if producto_carrito:
-                # Si ya está en el carrito, actualizar la cantidad
-                producto_carrito.cantidad += cantidad
-                producto_carrito.save()
+            # Si no existe el carrito, se crea un carrito vacío
+            if not created:
+                # Si el carrito existe, verifica si el producto está en el carrito
+                producto_carrito = ProductoCarrito.objects.filter(id_carrito=carrito_usuario, id_producto=producto).first()
+                if not producto_carrito:
+                    ProductoCarrito.objects.create(id_carrito=carrito_usuario, id_producto=producto, cantidad=cantidad)
             else:
-                # Si no está en el carrito, crear una nueva entrada
-                ProductoCarrito.objects.create(carrito=carrito_usuario, producto=producto, cantidad=cantidad)
+                # Si el carrito fue creado, agregar el producto por primera vez
+                ProductoCarrito.objects.create(id_carrito=carrito_usuario, id_producto=producto, cantidad=cantidad)
 
             # Actualizar el total del carrito
             carrito_usuario.actualizar_total()
@@ -525,39 +525,47 @@ def add_to_cart(request):
             return JsonResponse({"success": True, "message": "Producto añadido al carrito"})
 
         except Exception as e:
-            return JsonResponse({"success": False, "message": str(e)}, status=500)
+            print(f"Error al agregar al carrito: {str(e)}")  # Imprimir más detalles sobre el error
+            return JsonResponse({"success": False, "message": "Hubo un problema al agregar al carrito", "error": str(e)}, status=500)
+
+    return JsonResponse({"success": False, "message": "Método no permitido"}, status=405)
+
 
 
 
 @api_view(['GET'])
 def obtener_carrito(request):
-    user_token = request.headers.get('Authorization')  # Suponiendo que el token se pasa en los headers
-    if not user_token:
+    userEmail = request.headers.get('userEmail')  # Obtener el correo desde los headers
+    if not userEmail:
         return JsonResponse({"error": "Usuario no autenticado"}, status=401)
 
     try:
-        # Obtener usuario a partir del token
-        usuario = Usuario.objects.get(token=user_token)
-        carrito_usuario = carrito.objects.get(idUsuario=usuario)
-        productos_carrito = ProductoCarrito.objects.filter(carrito=carrito_usuario)
+        # Obtener usuario por correo
+        usuario = Usuario.objects.get(correo=userEmail)
         
+        # Obtener el carrito del usuario (si existe)
+        carrito_usuario = carrito.objects.filter(idUsuario=usuario).first()
+        if not carrito_usuario:
+            return JsonResponse({"error": "Carrito no encontrado"}, status=404)
+
+        # Obtener los productos del carrito
+        productos_carrito = ProductoCarrito.objects.filter(id_carrito=carrito_usuario)
+
         productos = [{
-            "idProducto": item.producto.idProducto,
-            "nombre": item.producto.nombre,
+            "idProducto": item.id_producto.idProducto,
+            "nombre": item.id_producto.nombre,
             "cantidad": item.cantidad,
-            "precio": item.producto.precio,
+            "precio": float(item.id_producto.precio),
         } for item in productos_carrito]
 
         return JsonResponse({
             "idCarrito": carrito_usuario.idCarrito,
-            "total": carrito_usuario.total,
+            "total": float(carrito_usuario.total),
             "productos": productos,
         })
 
     except Usuario.DoesNotExist:
         return JsonResponse({"error": "Usuario no encontrado"}, status=404)
-    except carrito.DoesNotExist:
-        return JsonResponse({"error": "Carrito no encontrado"}, status=404)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 

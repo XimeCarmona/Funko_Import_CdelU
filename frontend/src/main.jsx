@@ -6,7 +6,6 @@ import './index.css';
 
 const clientId = "668894091180-c9dah2k5g4j3nbi4pneic550md1a2iok.apps.googleusercontent.com"; // Sustituye por tu Client ID
 
-
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <GoogleOAuthProvider clientId={clientId}> {/* Envuelve tu app con GoogleOAuthProvider */}
