@@ -17,6 +17,7 @@ router.register(r'preguntas', views.preguntaView, basename='pregunta')
 router.register(r'ediciones', views.EdicionView, basename='edicion')
 router.register(r'facturas', views.facturaView, basename='factura')
 router.register(r'lineafacturas', views.lineaFacturaView, basename='lineafactura')
+router.register(r'ingresostock', views.IngresoStockView, basename='ingresostock')
 
 urlpatterns = [
     path('', include(router.urls)),  # Rutas del router bajo el prefijo 'api/auth/'
@@ -27,4 +28,8 @@ urlpatterns = [
     path('auth/update-profile/', views.update_profile, name='update_profile'),
     path('auth/admin-dashboard-data/', views.admin_dashboard_data, name='admin_dashboard_data'),
     path('auth/obtener-productos/', views.obtener_productos, name='obtener_productos'),
+    path('auth/obtener-detalle-producto/<int:idProducto>/', views.obtener_detalle_producto, name='obtener_detalle_producto'),
+    path('auth/aplicar-descuento/', views.aplicar_descuento, name='aplicar_descuento'),
+    path('auth/add-to-cart/', views.add_to_cart, name='add_to_cart'),
+    path('auth/obtener-carrito/', views.obtener_carrito, name='obtener_carrito'),
 ]

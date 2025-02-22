@@ -1,36 +1,66 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Importa useNavigate
+import { useNavigate } from "react-router-dom";
 import "../../App.css";
 import Header from "../../components/user/Header";
 import Footer from "../../components/user/Footer";
-import ShippingMethod from "../../components/user/ShippingMethod";
-import PaymentMethod from "../../components/user/PaymentMethod";
-import PaymentStatus from "../../components/user/PaymentStatus";
 
 const Cart = () => {
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
-  const navigate = useNavigate(); // Usa useNavigate para redirecciones
-  const [paymentStatus, setPaymentStatus] = useState("");
+  const [discountCode, setDiscountCode] = useState("");
+  const [discountApplied, setDiscountApplied] = useState(false);
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("/funkos.json") // Asegúrate de que está en la carpeta `public`
-      .then((response) => response.json())
-      .then((data) => {
-        const cartWithQuantity = data.map((item) => ({ ...item, quantity: 1 }));
-        setCart(cartWithQuantity);
-        calcularTotal(cartWithQuantity);
+    const fetchCart = async () => {
+      try {
+        const token = localStorage.getItem("userToken");
+        if (!token) {
+          navigate("/login");
+          return;
+        }
+
+        const response = await fetch("http://localhost:8000/api/auth/obtener-carrito/", {
+          headers: {
+            "Authorization": `Token ${token}`
+          }
+        });
+
+        if (response.status === 401) {
+          localStorage.removeItem("userToken");
+          navigate("/login");
+          return;
+        }
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          const productos = data.productos || [];
+          const cartWithQuantity = productos.map(item => ({
+            ...item,
+            quantity: item.cantidad,
+            precio: parseFloat(item.precio)
+          }));
+          setCart(cartWithQuantity);
+          calcularTotal(cartWithQuantity);
+        } else {
+          alert(data.error || "Error al cargar carrito");
+        }
+        
         setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error al cargar el carrito:", error);
+      } catch (error) {
+        console.error("Error:", error);
         setLoading(false);
-      });
+      }
+    };
+
+    fetchCart();
   }, []);
 
   const calcularTotal = (cart) => {
-    const totalAmount = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    const totalAmount = cart.reduce((acc, item) => acc + item.precio * item.quantity, 0);
     setTotal(totalAmount.toFixed(2));
   };
 
@@ -38,7 +68,7 @@ const Cart = () => {
     if (newQuantity <= 0) return;
 
     const updatedCart = cart.map((item) =>
-      item.id === productId ? { ...item, quantity: newQuantity } : item
+      item.idProducto === productId ? { ...item, quantity: newQuantity } : item
     );
 
     setCart(updatedCart);
@@ -46,10 +76,24 @@ const Cart = () => {
   };
 
   const removeProduct = (productId) => {
-    const updatedCart = cart.filter((item) => item.id !== productId);
+    const updatedCart = cart.filter((item) => item.idProducto !== productId);
     setCart(updatedCart);
     calcularTotal(updatedCart);
   };
+
+  const applyDiscount = () => {
+    const validCodes = ["DESCUENTO10", "BLACKFRIDAY", "NAVIDAD2023"];
+    if (validCodes.includes(discountCode.toUpperCase())) {
+      setDiscountApplied(true);
+      const discount = total * 0.1;
+      setDiscountAmount(discount.toFixed(2));
+      alert("¡Código de descuento aplicado!");
+    } else {
+      alert("Código de descuento no válido");
+    }
+  };
+
+  const totalWithDiscount = (parseFloat(total) + 50 - discountAmount).toFixed(2);
 
   if (loading) return <p>Cargando carrito...</p>;
 
@@ -62,7 +106,6 @@ const Cart = () => {
           <p>Tu carrito está vacío</p>
         ) : (
           <div className="cart-table">
-            {/* Encabezados de la tabla */}
             <div className="cart-header">
               <div>Producto</div>
               <div>Precio</div>
@@ -71,29 +114,27 @@ const Cart = () => {
               <div>Acciones</div>
             </div>
 
-            {/* Lista de productos */}
             {cart.map((item) => (
-              <div key={item.id} className="cart-item">
+              <div key={item.idProducto} className="cart-item">
                 <div className="cart-product">
-                  <img src={item.image} alt={item.name} className="cart-item-img" />
-                  <span>{item.name}</span>
+                  <img src={item.imagen} alt={item.nombre} className="cart-item-img" />
+                  <span>{item.nombre}</span>
                 </div>
-                <div>${item.price}</div>
+                <div>${item.precio}</div>
                 <div className="cart-quantity">
-                  <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</button>
+                  <button onClick={() => updateQuantity(item.idProducto, item.quantity - 1)}>-</button>
                   <span>{item.quantity}</span>
-                  <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
+                  <button onClick={() => updateQuantity(item.idProducto, item.quantity + 1)}>+</button>
                 </div>
-                <div>${(item.price * item.quantity).toFixed(2)}</div>
+                <div>${(item.precio * item.quantity).toFixed(2)}</div>
                 <div>
-                  <button className="remove-btn" onClick={() => removeProduct(item.id)}>
+                  <button className="remove-btn" onClick={() => removeProduct(item.idProducto)}>
                     Eliminar
                   </button>
                 </div>
               </div>
             ))}
 
-            {/* Detalles de la compra */}
             <div className="cart-summary">
               <div className="summary-row">
                 <span>Subtotal</span>
@@ -103,19 +144,36 @@ const Cart = () => {
                 <span>Envío</span>
                 <span>$50.00</span>
               </div>
+              {discountApplied && (
+                <div className="summary-row">
+                  <span>Descuento</span>
+                  <span>-${discountAmount}</span>
+                </div>
+              )}
               <div className="summary-row total">
                 <span>Total</span>
-                <span>${(parseFloat(total) + 50).toFixed(2)}</span>
+                <span>${totalWithDiscount}</span>
               </div>
             </div>
 
-            {/* Botones de acción */}
+            <div className="discount-section">
+              <input
+                type="text"
+                placeholder="Código de descuento"
+                value={discountCode}
+                onChange={(e) => setDiscountCode(e.target.value)}
+              />
+              <button onClick={applyDiscount} className="apply-discount-btn">
+                Aplicar Descuento
+              </button>
+            </div>
+
             <div className="cart-actions">
               <button onClick={() => navigate("/")} className="cancel-btn">
                 Cancelar
               </button>
-              <button onClick={() => navigate("/user/shipping")} className="next-btn">
-                Siguiente
+              <button onClick={() => navigate("/checkout")} className="checkout-btn">
+                Pagar
               </button>
             </div>
           </div>

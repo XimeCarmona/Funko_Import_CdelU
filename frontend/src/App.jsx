@@ -13,6 +13,7 @@ import Pedidos from "./pages/admin/Pedidos";
 import Edicion from "./pages/admin/Edicion";
 import Perfil from "./pages/admin/AdPerfil";
 import Descuentos from "./pages/admin/Descuentos";
+import Promociones from "./pages/admin/Promociones";
 
 // User
 import UserHome from "./pages/user/UserHome";
@@ -22,7 +23,8 @@ import Favorites from "./pages/user/Favorites";
 import PerfilUser from "./pages/user/PerfilUser";
 import ShippingMethod from "./components/user/ShippingMethod";
 import PaymentMethod from "./components/user/PaymentMethod";
-
+import PaymentStatus from "./components/user/PaymentStatus";
+import DetalleFunko from "./components/user/DetalleFunko";
 function App() {
   return (
     <Router>
@@ -45,19 +47,22 @@ function App() {
           <Route path="edicion" element={<Edicion />} />
           <Route path="perfil" element={<Perfil />} />
           <Route path="descuento" element={<Descuentos />} />
+          <Route path="promocion" element={<Promociones />} />
           <Route path="*" element={<Navigate to="/admin" />} />
         </Route>
 
         {/* Rutas del Usuario */}
         <Route path="/user" element={<UserLayout />}>
           <Route index element={<UserHome />} />
-          <Route path="funko/:id" element={<Funko />} />
+          <Route path="funko/:idProducto" element={<Funko />} />
           <Route path="carrito" element={<Cart />} />
           <Route path="favorites" element={<Favorites />} />
           <Route path="perfil" element={<PerfilUser />} />
           <Route path="*" element={<Navigate to="/user" />} />
           <Route path="shipping" element={<ShippingMethod />} />
           <Route path="payment" element={<PaymentMethod />} />
+          <Route path="payment-status" element={<PaymentStatus />} />
+          <Route path="detalle/:idProducto" element={<DetalleFunko />} />
         </Route>
 
         {/* Ruta por defecto */}

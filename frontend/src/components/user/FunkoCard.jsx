@@ -1,24 +1,26 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-function FunkoCard({ funko }) {
+function FunkoCard({ producto }) {
   const [isFavorite, setIsFavorite] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
-    if (favorites.some((f) => f.idProducto === funko.idProducto)) {
+    if (favorites.some((p) => p.idProducto === producto.idProducto)) {
       setIsFavorite(true);
     }
-  }, [funko.idProducto]);
+  }, [producto.idProducto]);
 
   const toggleFavorite = (e) => {
     e.stopPropagation();
     let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
 
     if (isFavorite) {
-      favorites = favorites.filter((f) => f.idProducto !== funko.idProducto);
+      favorites = favorites.filter((p) => p.idProducto !== producto.idProducto);
     } else {
-      favorites.push(funko);
+      favorites.push(producto);
     }
 
     localStorage.setItem("favorites", JSON.stringify(favorites));
@@ -26,9 +28,9 @@ function FunkoCard({ funko }) {
   };
 
   // Construye la URL completa de la imagen
-  const imageUrl = funko.imagen 
-  ? `http://localhost:8000/media/productos/${funko.imagen}`
-  : "https://via.placeholder.com/150";
+  const imageUrl = producto.imagen 
+    ? `http://localhost:8000/media/productos/${producto.imagen}`
+    : "https://via.placeholder.com/150";
 
   return (
     <div className="funko-card">
@@ -41,18 +43,19 @@ function FunkoCard({ funko }) {
 
       <img 
         src={imageUrl} 
-        alt={funko.nombre} 
+        alt={producto.nombre} 
         className="funko-image" 
         onError={(e) => {
-          e.target.src = "https://via.placeholder.com/150";  // Imagen de respaldo si falla la carga
+          e.target.src = "https://via.placeholder.com/150";
         }}
       />
-      <h3>{funko.nombre}</h3>
-      <p>{funko.precio} USD</p>
+      <h3>{producto.nombre}</h3>
+      <p>{producto.precio} USD</p>
 
-      <Link to={`/user/funko/${funko.id}`}>
-        <button className="buy-button">Comprar</button>
-      </Link>
+      <button onClick={() => navigate(`/user/funko/${producto.idProducto}`)}>
+        Comprar
+      </button>
+    
     </div>
   );
 }

@@ -99,6 +99,7 @@ const PerfilUser = () => {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
+        correo: localStorage.getItem('email'),
         direccion: userData.direccion,
         // ciudad: userData.ciudad,
         // provincia: userData.provincia,

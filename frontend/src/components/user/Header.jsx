@@ -8,7 +8,7 @@ const Header = ({ setSearchTerm }) => {
   const navigate = useNavigate();
 
   // Verifica si el usuario ha iniciado sesión
-  const isLoggedIn = !!localStorage.getItem("token");
+  const isUserLoggedIn = !!localStorage.getItem("user_token");
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -18,11 +18,12 @@ const Header = ({ setSearchTerm }) => {
     setSearchTerm(e.target.value);
   };
 
+
   // Función para cerrar sesión
   const handleLogout = () => {
-    localStorage.removeItem("token"); // Elimina el token
-    localStorage.removeItem("email"); // Elimina el email
-    navigate("/login"); // Redirige al usuario a la página de login
+    localStorage.removeItem("user_token"); // Elimina solo el token del usuario
+    localStorage.removeItem("user_email"); // Elimina solo el email del usuario
+    navigate("/login"); // Redirige al login
   };
 
   return (
@@ -79,7 +80,7 @@ const Header = ({ setSearchTerm }) => {
           {isDropdownOpen && (
             <div className="dropdown-menuUS absolute right-0 bg-white text-black rounded-md shadow-md mt-2">
               {/* Mostrar "Mi Perfil" solo si el usuario ha iniciado sesión */}
-              {isLoggedIn && (
+              {isUserLoggedIn && (
                 <Link
                   to="/user/perfil"
                   className="block px-4 py-2 hover:bg-gray-200"
@@ -89,7 +90,7 @@ const Header = ({ setSearchTerm }) => {
               )}
 
               {/* Mostrar "Cerrar Sesión" o "Iniciar Sesión" según el estado de autenticación */}
-              {isLoggedIn ? (
+              {isUserLoggedIn ? (
                 <button
                   onClick={handleLogout}
                   className="block w-full text-left px-4 py-2 hover:bg-gray-200"
@@ -97,10 +98,7 @@ const Header = ({ setSearchTerm }) => {
                   Cerrar Sesión
                 </button>
               ) : (
-                <Link
-                  to="/login"
-                  className="block px-4 py-2 hover:bg-gray-200"
-                >
+                <Link to="/login" className="block px-4 py-2 hover:bg-gray-200">
                   Iniciar Sesión
                 </Link>
               )}

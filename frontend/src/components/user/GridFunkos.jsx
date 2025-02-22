@@ -59,7 +59,6 @@ function GridFunkos({ searchTerm }) {
 
   return (
     <div className="grid-container">
-      {/* Mostrar producto destacado si no hay filtros activos ni búsqueda */}
       {destacado && searchTerm === "" && filterOption === "all" && (
         <div className="featured-funko">
           <div className="featured-image">
@@ -77,7 +76,6 @@ function GridFunkos({ searchTerm }) {
         <p>Nuestros productos</p>
       </div>
 
-      {/* Filtros */}
       <div className="filters">
         <span>Ordenar por: </span>
         <button onClick={() => sortProductos("nameAsc")}>A - Z</button>
@@ -93,10 +91,9 @@ function GridFunkos({ searchTerm }) {
         </select>
       </div>
 
-      {/* Grilla de Productos */}
       <div className="funkos-grid">
         {otrosProductos.length > 0 ? (
-          otrosProductos.map((producto) => <FunkoCard key={producto.idProducto} funko={producto} />)
+          otrosProductos.map((producto) => <FunkoCard key={producto.idProducto} producto={producto} />)
         ) : (
           <p>No hay productos disponibles.</p>
         )}

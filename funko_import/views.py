@@ -11,9 +11,11 @@ import mercadopago
 from django.views.decorators.csrf import csrf_exempt
 import json
 from rest_framework.parsers import MultiPartParser,FormParser,JSONParser
-
+from rest_framework.response import Response
+from rest_framework import status
 from django.db.models import Sum, Count
 from django.conf import settings
+import secrets
 
 # Create your views here.
 
@@ -52,8 +54,7 @@ class ProductoView(viewsets.ModelViewSet):
 
 class PromocionView(viewsets.ModelViewSet):
     serializer_class = PromocionSerializer
-    queryset = Promocion.objects.all()
-
+    queryset = Promocion.objects.all().select_related('id_producto')
 class resenaComentarioView(viewsets.ModelViewSet): 
     serializer_class = ResenaComentarioSerializer
     queryset = ResenaComentario.objects.all()
@@ -69,6 +70,10 @@ class facturaView(viewsets.ModelViewSet):
 class lineaFacturaView(viewsets.ModelViewSet):
     serializer_class = LineaFacturaSerializer
     queryset = LineaFactura.objects.all()
+
+class IngresoStockView(viewsets.ModelViewSet):
+    serializer_class = IngresoStockSerializer
+    queryset = IngresoStock.objects.all()
 
 #GET ALL
 
@@ -220,7 +225,6 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
 # CLIENT_ID de tu aplicación en Google Cloud
-
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
@@ -229,7 +233,7 @@ from google.auth.transport import requests as google_requests
 from .models import Usuario
 
 
-GOOGLE_CLIENT_ID = "CLIENT_ID"
+GOOGLE_CLIENT_ID = "668894091180-c9dah2k5g4j3nbi4pneic550md1a2iok.apps.googleusercontent.com"
 @csrf_exempt
 def google_login(request):
     if request.method != "POST":
@@ -415,6 +419,7 @@ from django.conf import settings
 
 
 def obtener_productos(request):
+    #obtiene la lista de productos de la base de datos
     productos = Producto.objects.all().values(
         "idProducto", 
         "nombre", 
@@ -437,3 +442,204 @@ def obtener_productos(request):
         productos_list.append(producto)
 
     return JsonResponse(productos_list, safe=False)
+
+from rest_framework.decorators import api_view
+from django.http import JsonResponse
+from .models import Producto
+from django.shortcuts import get_object_or_404
+
+@api_view(['GET'])
+def obtener_detalle_producto(request, idProducto):
+    try:
+        # Usamos get_object_or_404 para obtener el producto por su idProducto
+        producto = get_object_or_404(Producto, idProducto=idProducto)
+        
+        # Si el producto tiene imagen, lo mostramos como URL completa
+        imagen_url = producto.imagen.url if producto.imagen else None
+        
+        # Enviar los datos del producto como una respuesta JSON
+        return JsonResponse({
+            "idProducto": producto.idProducto,
+            "nombre": producto.nombre,
+            "descripcion": producto.descripcion,
+            "precio": str(producto.precio),  # Convertimos el precio a string para asegurar el formato correcto
+            "imagen": imagen_url,
+            "cantidadDisp": producto.cantidadDisp,
+            "esEspecial": producto.esEspecial,
+        })
+    except Exception as e:
+        # Si ocurre un error, lo devolvemos en formato JSON
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+
+    
+from .models import carrito, ProductoCarrito
+from django.http import JsonResponse
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from .models import Usuario, Producto, carrito, ProductoCarrito
+
+@csrf_exempt
+def add_to_cart(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            user_token = data.get("user_token")
+            id_producto = data.get("idProducto")
+            cantidad = data.get("cantidad")
+
+            if not user_token or not id_producto or not cantidad:
+                return JsonResponse({"success": False, "message": "Datos incompletos"}, status=400)
+
+            # Verificar si el usuario existe a partir del token
+            try:
+                usuario = Usuario.objects.get(token=user_token)
+            except Usuario.DoesNotExist:
+                return JsonResponse({"success": False, "message": "Usuario no encontrado"}, status=404)
+
+            # Verificar si el producto existe
+            try:
+                producto = Producto.objects.get(idProducto=id_producto)
+            except Producto.DoesNotExist:
+                return JsonResponse({"success": False, "message": "Producto no encontrado"}, status=404)
+
+            # Obtener o crear el carrito del usuario
+            carrito_usuario, created = carrito.objects.get_or_create(idUsuario=usuario)
+
+            # Verificar si el producto ya está en el carrito
+            producto_carrito = ProductoCarrito.objects.filter(carrito=carrito_usuario, producto=producto).first()
+            if producto_carrito:
+                # Si ya está en el carrito, actualizar la cantidad
+                producto_carrito.cantidad += cantidad
+                producto_carrito.save()
+            else:
+                # Si no está en el carrito, crear una nueva entrada
+                ProductoCarrito.objects.create(carrito=carrito_usuario, producto=producto, cantidad=cantidad)
+
+            # Actualizar el total del carrito
+            carrito_usuario.actualizar_total()
+
+            return JsonResponse({"success": True, "message": "Producto añadido al carrito"})
+
+        except Exception as e:
+            return JsonResponse({"success": False, "message": str(e)}, status=500)
+
+
+
+@api_view(['GET'])
+def obtener_carrito(request):
+    user_token = request.headers.get('Authorization')  # Suponiendo que el token se pasa en los headers
+    if not user_token:
+        return JsonResponse({"error": "Usuario no autenticado"}, status=401)
+
+    try:
+        # Obtener usuario a partir del token
+        usuario = Usuario.objects.get(token=user_token)
+        carrito_usuario = carrito.objects.get(idUsuario=usuario)
+        productos_carrito = ProductoCarrito.objects.filter(carrito=carrito_usuario)
+        
+        productos = [{
+            "idProducto": item.producto.idProducto,
+            "nombre": item.producto.nombre,
+            "cantidad": item.cantidad,
+            "precio": item.producto.precio,
+        } for item in productos_carrito]
+
+        return JsonResponse({
+            "idCarrito": carrito_usuario.idCarrito,
+            "total": carrito_usuario.total,
+            "productos": productos,
+        })
+
+    except Usuario.DoesNotExist:
+        return JsonResponse({"error": "Usuario no encontrado"}, status=404)
+    except carrito.DoesNotExist:
+        return JsonResponse({"error": "Carrito no encontrado"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+@csrf_exempt
+def actualizar_cantidad(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            user_token = data.get("user_token")
+            id_producto = data.get("idProducto")
+            nueva_cantidad = data.get("cantidad")
+
+            if not user_token or not id_producto or not nueva_cantidad:
+                return JsonResponse({"success": False, "message": "Datos incompletos"}, status=400)
+
+            # Obtener usuario por token
+            try:
+                usuario = Usuario.objects.get(token=user_token)
+            except Usuario.DoesNotExist:
+                return JsonResponse({"success": False, "message": "Usuario no encontrado"}, status=404)
+
+            # Obtener producto
+            try:
+                producto = Producto.objects.get(idProducto=id_producto)
+            except Producto.DoesNotExist:
+                return JsonResponse({"success": False, "message": "Producto no encontrado"}, status=404)
+
+            # Obtener carrito del usuario
+            carrito_usuario = carrito.objects.get(idUsuario=usuario)
+
+            # Verificar si el producto está en el carrito
+            producto_carrito = ProductoCarrito.objects.filter(carrito=carrito_usuario, producto=producto).first()
+            if not producto_carrito:
+                return JsonResponse({"success": False, "message": "Producto no está en el carrito"}, status=404)
+
+            # Actualizar la cantidad
+            producto_carrito.cantidad = nueva_cantidad
+            producto_carrito.save()
+
+            # Actualizar el total del carrito
+            carrito_usuario.actualizar_total()
+
+            return JsonResponse({"success": True, "message": "Cantidad actualizada en el carrito"})
+
+        except Exception as e:
+            return JsonResponse({"success": False, "message": str(e)}, status=500)
+
+
+
+    
+import datetime
+
+@csrf_exempt
+def aplicar_descuento(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            codigo_descuento = data.get("codigoDescuento")
+            user_token = data.get("user_token")
+
+            if not codigo_descuento or not user_token:
+                return JsonResponse({"success": False, "message": "Datos incompletos"}, status=400)
+
+            usuario = Usuario.objects.get(token=user_token)
+            carrito_usuario = carrito.objects.get(idUsuario=usuario)
+
+            try:
+                descuento = Descuento.objects.get(codigoDescuento=codigo_descuento)
+            except Descuento.DoesNotExist:
+                return JsonResponse({"success": False, "message": "Código de descuento no válido"}, status=404)
+
+            # Verificar si la fecha de validez del descuento es correcta
+            if descuento.fechaInicio <= datetime.date.today() <= descuento.fechaFin:
+                carrito_usuario.aplicar_descuento(descuento.porcentaje)
+                return JsonResponse({
+                    "success": True,
+                    "message": "Descuento aplicado",
+                    "descuento": str(descuento.porcentaje * 100),  # Mostrar el porcentaje como entero
+                    "newTotal": str(carrito_usuario.total),
+                })
+            else:
+                return JsonResponse({"success": False, "message": "Código de descuento expirado"}, status=400)
+
+        except Exception as e:
+            return JsonResponse({"success": False, "message": str(e)}, status=500)

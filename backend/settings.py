@@ -152,7 +152,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
 
-
 SITE_ID = 1
 
 AUTHENTICATION_BACKENDS = [

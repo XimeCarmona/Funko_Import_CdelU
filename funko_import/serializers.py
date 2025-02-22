@@ -8,7 +8,7 @@ from .models import (
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
-        fields = '__all__'
+        fields = ['idUsuario', 'nombre', 'apellido', 'correo']
 
 class ColeccionSerializer(serializers.ModelSerializer):
     cantidad = serializers.SerializerMethodField()
@@ -44,10 +44,20 @@ class ProductoSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
 class PromocionSerializer(serializers.ModelSerializer):
+    producto = serializers.StringRelatedField(source='id_producto.nombre', read_only=True)
+    id_producto = serializers.PrimaryKeyRelatedField(
+        queryset=Producto.objects.all(),
+        required=True,
+        error_messages={'does_not_exist': 'El producto seleccionado no existe'}
+    )
+    
     class Meta:
         model = Promocion
-        fields = '__all__'
-
+        fields = ['id_promocion', 'porcentaje', 'fecha_inicio', 'fecha_fin', 'producto', 'id_producto']
+        extra_kwargs = {
+            'fecha_inicio': {'required': True},
+            'fecha_fin': {'required': True},
+        }
 class IngresoStockSerializer(serializers.ModelSerializer):
     class Meta:
         model = IngresoStock
@@ -117,3 +127,4 @@ class LineaFacturaSerializer(serializers.ModelSerializer):
     class Meta:
         model = LineaFactura
         fields = '__all__'
+

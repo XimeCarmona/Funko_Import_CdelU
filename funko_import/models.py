@@ -165,7 +165,7 @@ class Producto(models.Model): #!CRUD
 #Que no haya mas de 2 promociones activas al mismo producto al mismo tiempo
 class Promocion(models.Model):
     id_promocion = models.AutoField(primary_key=True)
-    porcentaje = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0), MaxValueValidator(1)])
+    porcentaje = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(Decimal('0.01')), MaxValueValidator(Decimal('1.00'))])
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField()
     id_producto = models.ForeignKey('Producto', on_delete=models.CASCADE)
@@ -193,7 +193,7 @@ class Promocion(models.Model):
             id_producto=self.id_producto,
             fecha_fin__gte=self.fecha_inicio,
             fecha_inicio__lte=self.fecha_fin,
-        ).exclude(id=self.id)
+        ).exclude(id_promocion=self.id_promocion)
         if promociones_activas.count() >= 2:  #!Quitar el =
             raise ValidationError("No puede haber más de dos promociones activas al mismo tiempo para el mismo producto.")
 
