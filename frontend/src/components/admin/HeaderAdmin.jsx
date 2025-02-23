@@ -41,6 +41,7 @@ const HeaderAdmin = () => {
                 <li><Link to="pedidos">Pedidos</Link></li>
                 <li><Link to="edicion">Edición</Link></li>
                 <li><Link to="descuento">Descuentos</Link></li>
+                <li><Link to="promocion">Promociones</Link></li> 
               </ul>
             </div>
           )}

@@ -179,7 +179,8 @@ def LineaFacturaRest (request):
 
 #MercadoPago
 # Credenciales de acceso (Access Token)
-ACCESS_TOKEN = "token"
+from django.conf import settings
+ACCESS_TOKEN = settings.ACCESS_TOKEN
 
 @csrf_exempt
 def process_payment(request):
@@ -530,9 +531,6 @@ def add_to_cart(request):
 
     return JsonResponse({"success": False, "message": "Método no permitido"}, status=405)
 
-
-
-
 @api_view(['GET'])
 def obtener_carrito(request):
     userEmail = request.headers.get('userEmail')  # Obtener el correo desde los headers
@@ -556,6 +554,7 @@ def obtener_carrito(request):
             "nombre": item.id_producto.nombre,
             "cantidad": item.cantidad,
             "precio": float(item.id_producto.precio),
+            "imagen": item.id_producto.imagen.url,
         } for item in productos_carrito]
 
         return JsonResponse({
@@ -612,34 +611,40 @@ def actualizar_cantidad(request):
 
         except Exception as e:
             return JsonResponse({"success": False, "message": str(e)}, status=500)
-
-
-
-    
+ 
 import datetime
-
 @csrf_exempt
 def aplicar_descuento(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
             codigo_descuento = data.get("codigoDescuento")
-            user_token = data.get("user_token")
+            user_email = data.get("userEmail")  # Cambiado de user_token a user_email
 
-            if not codigo_descuento or not user_token:
+            if not codigo_descuento or not user_email:
                 return JsonResponse({"success": False, "message": "Datos incompletos"}, status=400)
 
-            usuario = Usuario.objects.get(token=user_token)
+            # Buscar el usuario por su email
+            usuario = Usuario.objects.get(correo=user_email)
+            # Buscar el carrito asociado a ese usuario
             carrito_usuario = carrito.objects.get(idUsuario=usuario)
 
+            # Buscar el descuento por su código
             try:
                 descuento = Descuento.objects.get(codigoDescuento=codigo_descuento)
             except Descuento.DoesNotExist:
                 return JsonResponse({"success": False, "message": "Código de descuento no válido"}, status=404)
 
+            # Verificar si el descuento ya fue aplicado al carrito
+            if CarritoDescuento.objects.filter(idCarrito=carrito_usuario, idDescuento=descuento).exists():
+                return JsonResponse({"success": False, "message": "El descuento ya fue aplicado a este carrito"}, status=400)
+
             # Verificar si la fecha de validez del descuento es correcta
             if descuento.fechaInicio <= datetime.date.today() <= descuento.fechaFin:
+                # Aplicar el descuento al carrito
                 carrito_usuario.aplicar_descuento(descuento.porcentaje)
+                # Registrar el descuento en la tabla CarritoDescuento
+                CarritoDescuento.objects.create(idCarrito=carrito_usuario, idDescuento=descuento)
                 return JsonResponse({
                     "success": True,
                     "message": "Descuento aplicado",
@@ -649,5 +654,103 @@ def aplicar_descuento(request):
             else:
                 return JsonResponse({"success": False, "message": "Código de descuento expirado"}, status=400)
 
+        except Usuario.DoesNotExist:
+            return JsonResponse({"success": False, "message": "Usuario no encontrado"}, status=404)
+        except carrito.DoesNotExist:
+            return JsonResponse({"success": False, "message": "Carrito no encontrado"}, status=404)
         except Exception as e:
             return JsonResponse({"success": False, "message": str(e)}, status=500)
+
+
+###########################################################################################################
+        
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from .models import carrito, Producto  # Ajusta esto según tus modelos
+
+from django.shortcuts import get_object_or_404
+from funko_import.models import carrito, Producto, ProductoCarrito
+
+@api_view(['DELETE'])
+def eliminar_producto_carrito(request):
+    user_email = request.GET.get('userEmail')
+    id_producto = request.GET.get('idProducto')
+
+    if not user_email or not id_producto:
+        return Response({"error": "Faltan parámetros"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        # Buscar el usuario por su correo (no email)
+        usuario = Usuario.objects.get(correo=user_email)
+        # Buscar el carrito asociado a ese usuario
+        carrito_usuario = carrito.objects.get(idUsuario=usuario)
+    except Usuario.DoesNotExist:
+        return Response({"error": "El usuario no existe"}, status=status.HTTP_404_NOT_FOUND)
+    except carrito.DoesNotExist:
+        return Response({"error": "El carrito no existe"}, status=status.HTTP_404_NOT_FOUND)
+
+    try:
+        producto = Producto.objects.get(idProducto=id_producto)
+    except Producto.DoesNotExist:
+        return Response({"error": "El producto no existe"}, status=status.HTTP_404_NOT_FOUND)
+
+    # Buscar el producto en la tabla intermedia ProductoCarrito
+    producto_en_carrito = ProductoCarrito.objects.filter(id_carrito=carrito_usuario, id_producto=producto).first()
+    
+    if producto_en_carrito:
+        producto_en_carrito.delete()  # Eliminar el producto del carrito
+        carrito_usuario.actualizar_total()  # Actualiza el total después de eliminar
+        return Response({"message": "Producto eliminado del carrito"}, status=status.HTTP_200_OK)
+    else:
+        return Response({"error": "Producto no encontrado en el carrito"}, status=status.HTTP_404_NOT_FOUND)
+    
+import mercadopago
+
+from django.http import JsonResponse
+import json
+import mercadopago
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def create_payment_preference(request):
+    if request.method == 'POST':
+        try:
+            # Parsear el cuerpo de la solicitud
+            data = json.loads(request.body)
+            total = data.get('total')
+            items = data.get('items')
+            userEmail = data.get('payer', {}).get('email')
+
+            # Validar que los datos requeridos estén presentes
+            if not total or not items or not userEmail:
+                return JsonResponse({"error": "Faltan datos requeridos"}, status=400)
+
+            # Inicializar el SDK de Mercado Pago
+            sdk = mercadopago.SDK(ACCESS_TOKEN)
+
+            # Crear la preferencia de pago
+            preference_data = {
+                "items": items,
+                "payer": {
+                    "email": userEmail,
+                },
+                "back_urls": {
+                    "success": "http://localhost:5173/user/success",
+                    "failure": "http://localhost:5173/user/failure",
+                    "pending": "http://localhost:5173/user/pending",
+                },
+                "auto_return": "approved",
+            }
+
+            preference_response = sdk.preference().create(preference_data)
+            preference = preference_response["response"]
+
+            return JsonResponse({"preferenceId": preference["id"]})
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Formato JSON inválido"}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Método no permitido, use POST"}, status=405)

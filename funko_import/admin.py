@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Usuario, Coleccion, Descuento, Producto, Promocion, IngresoStock,PeticionProducto, ResenaComentario, Pregunta,Edicion, Factura, LineaFactura
+from .models import Usuario, Coleccion, Descuento, Producto, Promocion, IngresoStock,PeticionProducto, ResenaComentario, Pregunta,Edicion, Factura, LineaFactura, carrito
 
 # Register your models here.
 admin.site.register(Usuario)
@@ -14,3 +14,4 @@ admin.site.register(Pregunta)
 admin.site.register(Edicion)
 admin.site.register(Factura)
 admin.site.register(LineaFactura)
+admin.site.register(carrito)

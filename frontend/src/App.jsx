@@ -60,12 +60,17 @@ function App() {
           <Route path="carrito" element={<Cart />} />
           <Route path="favorites" element={<Favorites />} />
           <Route path="perfil" element={<PerfilUser />} />
-          <Route path="*" element={<Navigate to="/user" />} />
           <Route path="shipping" element={<ShippingMethod />} />
           <Route path="payment" element={<PaymentMethod />} />
           <Route path="payment-status" element={<PaymentStatus />} />
           <Route path="detalle/:idProducto" element={<DetalleFunko />} />
 
+          {/* Rutas para manejar los estados de pago */}
+          <Route path="success" element={<PaymentStatus status="success" />} />
+          <Route path="failure" element={<PaymentStatus status="failure" />} />
+          <Route path="pending" element={<PaymentStatus status="pending" />} />
+
+          <Route path="*" element={<Navigate to="/user" />} />
         </Route>
 
         {/* Ruta por defecto */}

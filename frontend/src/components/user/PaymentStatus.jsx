@@ -1,16 +1,14 @@
 import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-const PaymentStatus = () => {
-  const location = useLocation();
+const PaymentStatus = ({ status }) => {
   const navigate = useNavigate();
-  const { status } = location.state || {};
 
   return (
     <div className="payment-status">
       {status === "success" && (
         <div>
-          <h2>Â¡Pago exitoso!</h2>
+          <h2>¡Pago exitoso!</h2>
           <p>Gracias por tu compra.</p>
         </div>
       )}

@@ -32,4 +32,7 @@ urlpatterns = [
     path('auth/aplicar-descuento/', views.aplicar_descuento, name='aplicar_descuento'),
     path('auth/add-to-cart/', views.add_to_cart, name='add_to_cart'),
     path('auth/obtener-carrito/', views.obtener_carrito, name='obtener_carrito'),
+    path('auth/eliminar-producto-carrito/', views.eliminar_producto_carrito, name='eliminar_producto_carrito'),
+    path('auth/process_payment/', views.process_payment, name="process_payment"),
+    path('auth/create-payment-preference/', views.create_payment_preference, name='create_payment_preference'),
 ]
