@@ -77,7 +77,8 @@ class carrito(models.Model): #!CRUD
         return total
     
     def aplicar_descuento(self, porcentaje):
-        self.total = self.calcular_total() * (1 - porcentaje)
+        subtotal = self.calcular_total()
+        self.total = subtotal * (1 - porcentaje)
         self.save()
 
     def actualizar_total(self):
@@ -351,7 +352,7 @@ class ProductoCarrito(models.Model):
 
 
     def __str__(self):
-        return f'Producto Carrito {self.id_producto_carrito} - {self.cantidad} x {self.precio}'
+        return f'Producto Carrito {self.id_producto_carrito} - {self.cantidad} x {self.id_producto.precio}'
 
 class CodigoSeguimiento(models.Model): #?CRUD despues vemos
     codigo = models.CharField(max_length=50, unique=True)

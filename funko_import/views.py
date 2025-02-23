@@ -619,7 +619,7 @@ def aplicar_descuento(request):
         try:
             data = json.loads(request.body)
             codigo_descuento = data.get("codigoDescuento")
-            user_email = data.get("userEmail")  # Cambiado de user_token a user_email
+            user_email = data.get("userEmail")
 
             if not codigo_descuento or not user_email:
                 return JsonResponse({"success": False, "message": "Datos incompletos"}, status=400)
@@ -641,15 +641,20 @@ def aplicar_descuento(request):
 
             # Verificar si la fecha de validez del descuento es correcta
             if descuento.fechaInicio <= datetime.date.today() <= descuento.fechaFin:
-                # Aplicar el descuento al carrito
-                carrito_usuario.aplicar_descuento(descuento.porcentaje)
+                # Calcular el nuevo total con el descuento aplicado
+                subtotal = carrito_usuario.calcular_total()
+                nuevo_total = subtotal * (1 - descuento.porcentaje)
+                carrito_usuario.total = nuevo_total
+                carrito_usuario.save()
+
                 # Registrar el descuento en la tabla CarritoDescuento
                 CarritoDescuento.objects.create(idCarrito=carrito_usuario, idDescuento=descuento)
+
                 return JsonResponse({
                     "success": True,
                     "message": "Descuento aplicado",
                     "descuento": str(descuento.porcentaje * 100),  # Mostrar el porcentaje como entero
-                    "newTotal": str(carrito_usuario.total),
+                    "newTotal": str(nuevo_total),
                 })
             else:
                 return JsonResponse({"success": False, "message": "Código de descuento expirado"}, status=400)
@@ -754,3 +759,119 @@ def create_payment_preference(request):
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Método no permitido, use POST"}, status=405)
+
+#preguntas
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from .models import Pregunta, Usuario, Producto
+
+@api_view(['GET'])
+def obtener_preguntas_producto(request, idProducto):
+    try:
+        preguntas = Pregunta.objects.filter(id_producto=idProducto).select_related('id_Usuario')
+        preguntas_data = []
+        for pregunta in preguntas:
+            preguntas_data.append({
+                "id_pregunta": pregunta.id_pregunta,
+                "pregunta": pregunta.pregunta,
+                "respuesta": pregunta.respuesta,
+                "id_Usuario": {
+                    "nombre": pregunta.id_Usuario.nombre,
+                    "correo": pregunta.id_Usuario.correo
+                }
+            })
+        return JsonResponse(preguntas_data, safe=False)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
+
+@csrf_exempt
+def crear_pregunta(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            pregunta_texto = data.get("pregunta")
+            id_producto = data.get("id_producto")
+            correo = data.get("correo")
+
+            if not pregunta_texto or not id_producto or not correo:
+                return JsonResponse({"success": False, "message": "Datos incompletos"}, status=400)
+
+            # Verificar si el usuario existe
+            try:
+                usuario = Usuario.objects.get(correo=correo)
+            except Usuario.DoesNotExist:
+                return JsonResponse({"success": False, "message": "Usuario no encontrado"}, status=404)
+
+            # Verificar si el producto existe
+            try:
+                producto = Producto.objects.get(idProducto=id_producto)
+            except Producto.DoesNotExist:
+                return JsonResponse({"success": False, "message": "Producto no encontrado"}, status=404)
+
+            # Crear la pregunta
+            pregunta = Pregunta.objects.create(
+                pregunta=pregunta_texto,
+                id_producto=producto,
+                id_Usuario=usuario
+            )
+
+            return JsonResponse({
+                "success": True,
+                "message": "Pregunta creada correctamente",
+                "pregunta": {
+                    "id_pregunta": pregunta.id_pregunta,
+                    "pregunta": pregunta.pregunta,
+                    "respuesta": pregunta.respuesta,
+                    "id_Usuario": {
+                        "nombre": usuario.nombre,
+                        "correo": usuario.correo
+                    }
+                }
+            })
+
+        except Exception as e:
+            return JsonResponse({"success": False, "message": str(e)}, status=500)
+
+    return JsonResponse({"success": False, "message": "Método no permitido"}, status=405)
+
+@csrf_exempt
+def responder_pregunta(request, idPregunta):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            respuesta_texto = data.get("respuesta")
+
+            if not respuesta_texto:
+                return JsonResponse({"success": False, "message": "Respuesta no proporcionada"}, status=400)
+
+            # Verificar si la pregunta existe
+            try:
+                pregunta = Pregunta.objects.get(id_pregunta=idPregunta)
+            except Pregunta.DoesNotExist:
+                return JsonResponse({"success": False, "message": "Pregunta no encontrada"}, status=404)
+
+            # Actualizar la pregunta con la respuesta
+            pregunta.respuesta = respuesta_texto
+            pregunta.save()
+
+            return JsonResponse({
+                "success": True,
+                "message": "Respuesta enviada correctamente",
+                "pregunta": {
+                    "id_pregunta": pregunta.id_pregunta,
+                    "pregunta": pregunta.pregunta,
+                    "respuesta": pregunta.respuesta,
+                    "id_Usuario": {
+                        "nombre": pregunta.id_Usuario.nombre,
+                        "correo": pregunta.id_Usuario.correo
+                    }
+                }
+            })
+
+        except Exception as e:
+            return JsonResponse({"success": False, "message": str(e)}, status=500)
+
+    return JsonResponse({"success": False, "message": "Método no permitido"}, status=405)

@@ -35,4 +35,7 @@ urlpatterns = [
     path('auth/eliminar-producto-carrito/', views.eliminar_producto_carrito, name='eliminar_producto_carrito'),
     path('auth/process_payment/', views.process_payment, name="process_payment"),
     path('auth/create-payment-preference/', views.create_payment_preference, name='create_payment_preference'),
+    path('auth/obtener-preguntas-producto/<int:idProducto>/', views.obtener_preguntas_producto, name='obtener_preguntas_producto'),
+    path('auth/preguntas/', views.crear_pregunta, name='crear_pregunta'),
+    path('auth/responder-pregunta/<int:idPregunta>/', views.responder_pregunta, name='responder_pregunta'),
 ]
