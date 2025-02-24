@@ -197,5 +197,14 @@ CORS_ALLOW_HEADERS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-ACCESS_TOKEN = "YOUR_ACCESS_TOKEN"
+ACCESS_TOKEN = "ACCESS_TOKEN"
 CSRF_TRUSTED_ORIGINS = ["http://localhost:5173"]
+
+# settings.py
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'funkoimportcdelu@gmail.com'  # Tu correo de Gmail
+EMAIL_HOST_PASSWORD = 'funko12345'  # La contraseña de tu correo

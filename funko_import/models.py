@@ -296,7 +296,7 @@ class Factura(models.Model):
     id_factura = models.AutoField(primary_key=True)
     pago_total = models.DecimalField(max_digits=10, decimal_places=2,validators=[MinValueValidator(0)])
     forma_pago = models.CharField(max_length=50) #!INUTIL
-    fecha_venta = models.DateField()
+    fecha_venta = models.DateField(auto_now_add=True)
     id_Usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE)
 
     def calcular_total(self): #!cambiar precio porm el precio unitario de linea factura
@@ -316,7 +316,7 @@ class LineaFactura(models.Model):
     cantidad = models.IntegerField(validators=[MinValueValidator(1)])
     precioUnitario = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], default=0.00)
     idProducto = models.ForeignKey('Producto', on_delete=models.CASCADE)    
-    id_factura = models.ForeignKey('Factura', on_delete=models.CASCADE)
+    id_factura = models.ForeignKey('Factura', on_delete=models.CASCADE, related_name='lineas_factura')
 
     def __str__(self):
         return f'LineaFactura {self.idLineaFactura} - {self.cantidad}'

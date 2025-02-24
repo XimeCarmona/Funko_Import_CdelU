@@ -52,8 +52,8 @@ function FunkoCard({ producto }) {
       <h3>{producto.nombre}</h3>
       <p>{producto.precio} USD</p>
 
-      <button onClick={() => navigate(`/user/funko/${producto.idProducto}`)}>
-        Comprar
+      <button className="ver-mas-btn" onClick={() => navigate(`/user/funko/${producto.idProducto}`)}>
+        Ver más
       </button>
     
     </div>

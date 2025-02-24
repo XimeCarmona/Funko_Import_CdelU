@@ -38,4 +38,5 @@ urlpatterns = [
     path('auth/obtener-preguntas-producto/<int:idProducto>/', views.obtener_preguntas_producto, name='obtener_preguntas_producto'),
     path('auth/preguntas/', views.crear_pregunta, name='crear_pregunta'),
     path('auth/responder-pregunta/<int:idPregunta>/', views.responder_pregunta, name='responder_pregunta'),
+    path('auth/generar-factura/', views.generar_factura, name='generar_factura'),
 ]

@@ -1,47 +1,3 @@
-// import React, { useState } from "react";
-// import { useNavigate } from "react-router-dom";
-// import "../../App.css";
-// import Header from "../../components/user/Header";
-// import Footer from "../../components/user/Footer";
-
-// const ShippingMethod = () => {
-//   const [address, setAddress] = useState("");
-//   const navigate = useNavigate();
-
-//   const handleNext = () => {
-//     if (!address) {
-//       alert("Por favor ingresa tu dirección");
-//       return;
-//     }
-//     navigate("/user/payment", { state: { address, total } });
-//   };
-
-//   return (
-//     <>
-//       <Header />
-//       <div className="shipping-container">
-//         <h2>Dirección de Envío</h2>
-//         <input
-//           type="text"
-//           placeholder="Ingresa tu dirección"
-//           value={address}
-//           onChange={(e) => setAddress(e.target.value)}
-//         />
-//         <div className="shipping-actions">
-//           <button onClick={() => navigate("/user/carrito")} className="back-btn">
-//             Volver
-//           </button>
-//           <button onClick={handleNext} className="next-btn">
-//             Siguiente
-//           </button>
-//         </div>
-//       </div>
-//       <Footer />
-//     </>
-//   );
-// };
-
-// export default ShippingMethod;
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom"; // Importa useLocation
 import "../../App.css";
@@ -51,17 +7,20 @@ import Footer from "../../components/user/Footer";
 const ShippingMethod = () => {
   const [address, setAddress] = useState("");
   const navigate = useNavigate();
-  const location = useLocation(); // Usa useLocation para acceder al estado
+  const location = useLocation();
 
-  // Extrae el total desde location.state
+  // Extrae el total desde location.state (enviado desde Cart.jsx)
   const { total } = location.state || {};
+
+  const [loading, setLoading] = useState(false);
 
   const handleNext = () => {
     if (!address) {
       alert("Por favor ingresa tu dirección");
       return;
     }
-    // Pasa tanto la dirección como el total a la página de pago
+
+    // Redirigir a PaymentMethod con la dirección y el total
     navigate("/user/payment", { state: { address, total } });
   };
 
@@ -70,6 +29,7 @@ const ShippingMethod = () => {
       <Header />
       <div className="shipping-container">
         <h2>Dirección de Envío</h2>
+        <p>Total a pagar: ${total}</p> {/* Muestra el total recibido desde Cart.jsx */}
         <input
           type="text"
           placeholder="Ingresa tu dirección"
@@ -80,8 +40,8 @@ const ShippingMethod = () => {
           <button onClick={() => navigate("/user/carrito")} className="back-btn">
             Volver
           </button>
-          <button onClick={handleNext} className="next-btn">
-            Siguiente
+          <button onClick={handleNext} className="next-btn" disabled={loading}>
+            {loading ? "Procesando..." : "Siguiente"}
           </button>
         </div>
       </div>

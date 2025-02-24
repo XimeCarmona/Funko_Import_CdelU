@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import FunkoCard from "../user/FunkoCard";
 import "../../App.css";
+import { useNavigate } from "react-router-dom";
 
 function GridFunkos({ searchTerm }) {
   const [productos, setProductos] = useState([]);
   const [sortedProductos, setSortedProductos] = useState([]);
   const [filterOption, setFilterOption] = useState("all");
+  const navigate = useNavigate();
 
   // Cargar productos desde la API de Django
   useEffect(() => {
@@ -67,7 +69,12 @@ function GridFunkos({ searchTerm }) {
           <div className="featured-description">
             <h2>{destacado.nombre}</h2>
             <p>{destacado.descripcion}</p>
-            <button className="btn-see-more">Ver más</button>
+            <button 
+              className="btn-see-more" 
+              onClick={() => navigate(`/user/funko/${destacado.idProducto}`)} // Redirige al detalle del Funko
+            >
+              Ver más
+            </button>
           </div>
         </div>
       )}

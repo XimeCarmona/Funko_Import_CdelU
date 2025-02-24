@@ -1,21 +1,24 @@
-from django.shortcuts import render
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-from .models import Usuario, Coleccion, carrito, Descuento, Producto, Promocion, IngresoStock, PeticionProducto, ResenaComentario, Pregunta, CarritoDescuento, Factura, LineaFactura, FacturaDescuento, ProductoCarrito, CodigoSeguimiento, Edicion
-from django.views.generic import CreateView, TemplateView
-from .serializers import UsuarioSerializer, ColeccionSerializer, CarritoSerializer, DescuentoSerializer, ProductoSerializer, PromocionSerializer, IngresoStockSerializer, PeticionProductoSerializer, ResenaComentarioSerializer, PreguntaSerializer, CarritoDescuentoSerializer, FacturaSerializer, LineaFacturaSerializer, FacturaDescuentoSerializer, ProductoCarritoSerializer, CodigoSeguimientoSerializer, EdicionSerializer
-from .forms import UsuarioForm, ColeccionForm, DescuentoForm, productoForm, promocionForm, IngresoStockForm, PeticionProductoForm, ResenaComentarioForm, PreguntaForm, RespuestaForm
-from django.urls import reverse_lazy
+from .models import Usuario, Coleccion, carrito, Descuento, Producto, Promocion, IngresoStock, ResenaComentario, Pregunta, CarritoDescuento, Factura, LineaFactura, ProductoCarrito, Edicion
+# from django.views.generic import CreateView, TemplateView
+from .serializers import UsuarioSerializer, ColeccionSerializer, CarritoSerializer, DescuentoSerializer, ProductoSerializer, PromocionSerializer, IngresoStockSerializer, ResenaComentarioSerializer, PreguntaSerializer, FacturaSerializer, LineaFacturaSerializer, EdicionSerializer
+# from django.urls import reverse_lazy
 from rest_framework import viewsets
 import mercadopago
 from django.views.decorators.csrf import csrf_exempt
 import json
-from rest_framework.parsers import MultiPartParser,FormParser,JSONParser
+from rest_framework.parsers import MultiPartParser,FormParser
 from rest_framework.response import Response
 from rest_framework import status
-from django.db.models import Sum, Count
+from django.db.models import Sum
 from django.conf import settings
-import secrets
+from rest_framework.decorators import api_view
+from django.shortcuts import get_object_or_404
+from datetime import datetime
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+from django.utils import timezone
 
 # Create your views here.
 
@@ -178,62 +181,173 @@ def LineaFacturaRest (request):
     return JsonResponse(lineafactura)
 
 #MercadoPago
-# Credenciales de acceso (Access Token)
-from django.conf import settings
 ACCESS_TOKEN = settings.ACCESS_TOKEN
 
 @csrf_exempt
 def process_payment(request):
-    if request.method == "POST":
-        try:
-            # Inicializar el SDK de Mercado Pago
-            sdk = mercadopago.SDK(ACCESS_TOKEN)
-            
-            # Obtener los datos del cuerpo de la solicitud
-            body = json.loads(request.body)
+    if request.method != "POST":
+        return JsonResponse({"error": "Método no permitido"}, status=405)
 
-            # Crear el pago
-            payment_data = {
-                "transaction_amount": float(body["transaction_amount"]),
-                "token": body["token"],
-                "description": body["description"],
-                "installments": int(body["installments"]),
-                "payment_method_id": body["payment_method_id"],
-                "payer": {
-                    "email": body["payer"]["email"]
-                }
-            }
+    try:
+        sdk = mercadopago.SDK(settings.ACCESS_TOKEN)
+        body = json.loads(request.body)
 
-            # Procesar el pago
-            payment_response = sdk.payment().create(payment_data)
-            payment = payment_response["response"]
+        # Datos de pago
+        payment_data = {
+            "transaction_amount": float(body.get("transaction_amount", 0)),
+            "token": body.get("token"),
+            "description": body.get("description", "Compra en FunkoStore"),
+            "installments": int(body.get("installments", 1)),
+            "payment_method_id": body.get("payment_method_id"),
+            "payer": {"email": body.get("payer", {}).get("email")},
+        }
 
-            # Retornar la respuesta del pago al cliente
-            return JsonResponse({
-                "status": payment.get("status"),
-                "status_detail": payment.get("status_detail"),
-                "id": payment.get("id"),
-            })
+        # Enviar pago a MercadoPago
+        payment_response = sdk.payment().create(payment_data)
+        payment = payment_response.get("response", {})
 
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=400)
-    return JsonResponse({"error": "Invalid request method"}, status=400)
+        if not payment or "status" not in payment:
+            return JsonResponse({"error": "Error al procesar el pago"}, status=500)
+
+        print("Estado del pago:", payment["status"])  # Depuración
+
+        if payment["status"] == "approved":
+            print("Pago aprobado, generando factura...")  # Depuración
+
+            user_email = body["payer"]["email"]
+            usuario = get_object_or_404(Usuario, correo=user_email)
+            carrito_usuario = get_object_or_404(carrito, idUsuario=usuario)
+
+            # Crear factura
+            factura = Factura.objects.create(
+                pago_total=payment["transaction_amount"],
+                forma_pago="Mercado Pago",
+                fecha_venta=timezone.now().date(),
+                id_Usuario=usuario
+            )
+            print("Factura creada:", factura.id_factura)  # Depuración
+
+            # Crear líneas de factura
+            productos_carrito = ProductoCarrito.objects.filter(id_carrito=carrito_usuario)
+            for producto_carrito in productos_carrito:
+                LineaFactura.objects.create(
+                    cantidad=producto_carrito.cantidad,
+                    precioUnitario=producto_carrito.id_producto.precio,
+                    idProducto=producto_carrito.id_producto,
+                    id_factura=factura
+                )
+
+            print("Líneas de factura creadas")  # Depuración
+
+            #Vaciar carrito después de la compra
+            productos_carrito.delete()
+            print("Carrito vaciado")  # Depuración
+
+            return JsonResponse({"status": "success", "message": "Pago aprobado y factura generada"})
+        
+        else:
+            return JsonResponse({"status": payment["status"], "message": "El pago no fue aprobado"}, status=400)
+
+    except Exception as e:
+        print("Error en process_payment:", str(e))
+        return JsonResponse({"error": str(e)}, status=500)
+
+from django.db import transaction
+
+@csrf_exempt
+def generar_factura(request):
+    if request.method != 'POST':
+        return JsonResponse({"error": "Método no permitido"}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        user_email = data.get('userEmail')
+        items = data.get('items')
+
+        if not user_email or not items:
+            return JsonResponse({"error": "Faltan datos requeridos"}, status=400)
+
+        # Obtener el usuario
+        usuario = Usuario.objects.get(correo=user_email)
+
+        # Verificar que todos los productos existen antes de crear la factura
+        productos_ids = [item['idProducto'] for item in items]
+        productos = {p.idProducto: p for p in Producto.objects.filter(idProducto__in=productos_ids)}
+
+        if len(productos) != len(productos_ids):
+            return JsonResponse({"error": "Uno o más productos no existen"}, status=404)
+
+        # Iniciar transacción
+        with transaction.atomic():
+            # Crear la factura sin definir `pago_total`, se calculará en `save()`
+            factura = Factura.objects.create(id_Usuario=usuario)
+
+            # Crear las líneas de factura
+            for item in items:
+                producto = productos[item['idProducto']]
+                LineaFactura.objects.create(
+                    cantidad=item['cantidad'],
+                    precioUnitario=item['precio'],
+                    idProducto=producto,
+                    id_factura=factura
+                )
+
+            # Guardar la factura para actualizar el total
+            factura.save()
+
+            # Vaciar el carrito del usuario
+            try:
+                carrito_usuario = carrito.objects.get(idUsuario=usuario)
+                ProductoCarrito.objects.filter(id_carrito=carrito_usuario).delete()
+                carrito_usuario.total = 0
+                carrito_usuario.save()
+            except carrito.DoesNotExist:
+                pass  # Si el usuario no tiene carrito, simplemente continuar
+
+        return JsonResponse({"message": "Factura generada correctamente", "factura_id": factura.id_factura})
+
+    except Usuario.DoesNotExist:
+        return JsonResponse({"error": "Usuario no encontrado"}, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Formato JSON inválido"}, status=400)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+
+def enviar_factura_por_correo(usuario, factura):
+    # Crear el mensaje de la factura en texto plano
+    mensaje = f"""
+    Hola {usuario.nombre},
+
+    Gracias por tu compra en FunkoPopCdelU. Aquí están los detalles de tu factura:
+
+    Factura N°: {factura.id_factura}
+    Fecha: {factura.fecha_venta}
+    Total: ${factura.pago_total}
+
+    Productos:
+    """
+
+    # Agregar cada producto al mensaje
+    for linea in factura.lineas_factura.all():
+        mensaje += f" - {linea.idProducto.nombre}: {linea.cantidad} x ${linea.precioUnitario}\n"
+
+    mensaje += "\n¡Gracias por tu compra!\nFunkoPopCdelU"
+
+    # Enviar el correo electrónico
+    send_mail(
+        subject=f"Factura N° {factura.id_factura} - FunkoPopCdelU",
+        message=mensaje,
+        from_email=settings.EMAIL_HOST_USER,
+        recipient_list=[usuario.correo],
+        fail_silently=False
+    )
+
 
 #Login Google
-
-from django.http import JsonResponse
-from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
-
-# CLIENT_ID de tu aplicación en Google Cloud
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import json
-from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
-from .models import Usuario
-
-
 GOOGLE_CLIENT_ID = "668894091180-c9dah2k5g4j3nbi4pneic550md1a2iok.apps.googleusercontent.com"
 @csrf_exempt
 def google_login(request):
@@ -287,8 +401,6 @@ def google_login(request):
     except json.JSONDecodeError:
         return JsonResponse({"error": "Formato JSON inválido"}, status=400)
 
-#@csrf_exempt  # Para permitir peticiones sin CSRF Token (solo en desarrollo)
-#permite que los usuarios completen su información personal en la base de datos después de registrarse con Google
 @csrf_exempt
 def completar_perfil(request):
     if request.method != "POST":
@@ -346,9 +458,6 @@ def user_data(request):
         "correo": usuario.correo,
         "telefono": usuario.telefono,
         "direccion": usuario.direccion,
-        # "ciudad": usuario.ciudad,
-        # "provincia": usuario.provincia,
-        # "codigoPostal": usuario.codigoPostal,
     }
 
     return JsonResponse({"user": user_data})
@@ -359,16 +468,13 @@ def update_profile(request):
         return JsonResponse({"error": "Método no permitido"}, status=405)
 
     try:
-        data = json.loads(request.body.decode('utf-8'))  # Asegurar decodificación correcta
-        print("Datos recibidos en update_profile:", data)  # Ver qué llega realmente
+        data = json.loads(request.body.decode('utf-8'))
+        print("Datos recibidos en update_profile:", data)
         email = data.get("correo")
         nombre = data.get("nombre")
         apellido = data.get("apellido")
         telefono = data.get("telefono")
         direccion = data.get("direccion")
-        # ciudad = data.get("ciudad")
-        # provincia = data.get("provincia")
-        # codigoPostal = data.get("codigoPostal")
 
         usuario = Usuario.objects.filter(correo=email).first()
         if not usuario:
@@ -382,12 +488,6 @@ def update_profile(request):
             usuario.telefono = telefono
         if direccion:
             usuario.direccion = direccion
-        # if ciudad:
-        #     usuario.ciudad = ciudad
-        # if provincia:
-        #     usuario.provincia = provincia
-        # if codigoPostal:
-        #     usuario.codigoPostal = codigoPostal
 
         usuario.save()
 
@@ -395,8 +495,6 @@ def update_profile(request):
 
     except json.JSONDecodeError:
         return JsonResponse({"error": "Formato JSON inválido"}, status=400)
-
-from django.db.models import Sum, Count
 
 def admin_dashboard_data(request):
     ventas_totales = Factura.objects.aggregate(total_ventas=Sum('pago_total'))['total_ventas'] or 0
@@ -415,9 +513,6 @@ def admin_dashboard_data(request):
         'clientes_activos': clientes_activos,
         'producto_mas_vendido': producto_mas_vendido['idProducto__nombre'] if producto_mas_vendido else 'N/A'
     })
-
-from django.conf import settings
-
 
 def obtener_productos(request):
     #obtiene la lista de productos de la base de datos
@@ -444,11 +539,6 @@ def obtener_productos(request):
 
     return JsonResponse(productos_list, safe=False)
 
-from rest_framework.decorators import api_view
-from django.http import JsonResponse
-from .models import Producto
-from django.shortcuts import get_object_or_404
-
 @api_view(['GET'])
 def obtener_detalle_producto(request, idProducto):
     try:
@@ -471,17 +561,6 @@ def obtener_detalle_producto(request, idProducto):
     except Exception as e:
         # Si ocurre un error, lo devolvemos en formato JSON
         return JsonResponse({"error": str(e)}, status=500)
-
-
-
-    
-from .models import carrito, ProductoCarrito
-from django.http import JsonResponse
-
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import json
-from .models import Usuario, Producto, carrito, ProductoCarrito
 
 @csrf_exempt
 def add_to_cart(request):
@@ -612,7 +691,6 @@ def actualizar_cantidad(request):
         except Exception as e:
             return JsonResponse({"success": False, "message": str(e)}, status=500)
  
-import datetime
 @csrf_exempt
 def aplicar_descuento(request):
     if request.method == "POST":
@@ -668,14 +746,6 @@ def aplicar_descuento(request):
 
 
 ###########################################################################################################
-        
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from .models import carrito, Producto  # Ajusta esto según tus modelos
-
-from django.shortcuts import get_object_or_404
-from funko_import.models import carrito, Producto, ProductoCarrito
 
 @api_view(['DELETE'])
 def eliminar_producto_carrito(request):
@@ -709,36 +779,26 @@ def eliminar_producto_carrito(request):
         return Response({"message": "Producto eliminado del carrito"}, status=status.HTTP_200_OK)
     else:
         return Response({"error": "Producto no encontrado en el carrito"}, status=status.HTTP_404_NOT_FOUND)
-    
-import mercadopago
 
-from django.http import JsonResponse
-import json
-import mercadopago
-from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
 def create_payment_preference(request):
     if request.method == 'POST':
         try:
-            # Parsear el cuerpo de la solicitud
             data = json.loads(request.body)
             total = data.get('total')
             items = data.get('items')
-            userEmail = data.get('payer', {}).get('email')
+            user_email = data.get('payer', {}).get('email')
 
-            # Validar que los datos requeridos estén presentes
-            if not total or not items or not userEmail:
+            if not total or not items or not user_email:
                 return JsonResponse({"error": "Faltan datos requeridos"}, status=400)
 
-            # Inicializar el SDK de Mercado Pago
-            sdk = mercadopago.SDK(ACCESS_TOKEN)
+            sdk = mercadopago.SDK(settings.ACCESS_TOKEN)
 
-            # Crear la preferencia de pago
             preference_data = {
                 "items": items,
                 "payer": {
-                    "email": userEmail,
+                    "email": user_email,
                 },
                 "back_urls": {
                     "success": "http://localhost:5173/user/success",
@@ -751,7 +811,7 @@ def create_payment_preference(request):
             preference_response = sdk.preference().create(preference_data)
             preference = preference_response["response"]
 
-            return JsonResponse({"preferenceId": preference["id"]})
+            return JsonResponse({"preferenceId": preference["id"], "init_point": preference["init_point"]})
 
         except json.JSONDecodeError:
             return JsonResponse({"error": "Formato JSON inválido"}, status=400)
@@ -761,11 +821,6 @@ def create_payment_preference(request):
     return JsonResponse({"error": "Método no permitido, use POST"}, status=405)
 
 #preguntas
-
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import json
-from .models import Pregunta, Usuario, Producto
 
 @api_view(['GET'])
 def obtener_preguntas_producto(request, idProducto):

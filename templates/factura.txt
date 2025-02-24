@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Factura</title>
+</head>
+<body>
+    <h1>Factura N° {{ factura.id_factura }}</h1>
+    <p>Fecha: {{ factura.fecha_venta }}</p>
+    <p>Total: ${{ factura.pago_total }}</p>
+    <h2>Productos:</h2>
+    <ul>
+        {% for linea in factura.lineas_factura.all %}
+            <li>{{ linea.idProducto.nombre }} - {{ linea.cantidad }} x ${{ linea.precioUnitario }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

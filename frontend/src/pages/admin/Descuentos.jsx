@@ -54,62 +54,79 @@ function Descuentos() {
 
   return (
     <div className="main-content">
-      <h2>Gestión de Descuentos</h2>
-
+      <h2 className="title-descuentos">Gestión de Descuentos</h2>
+  
       <div className="search-and-add-container">
         <input
           type="text"
+          className="search-bar"
           placeholder="Buscar por código"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <button onClick={() => setIsAdding(true)}>
-          Nuevo Descuento
+        <button className="btn-add-descuento" onClick={() => setIsAdding(true)}>
+          Agregar Descuento
         </button>
       </div>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Código</th>
-            <th>Fecha Inicio</th>
-            <th>Fecha Fin</th>
-            <th>Porcentaje</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {descuentos
-            .filter(d => d.codigoDescuento.toLowerCase().includes(search.toLowerCase()))
-            .map(descuento => (
-              <tr key={descuento.idDescuento}>
-                <td>{descuento.codigoDescuento}</td>
-                <td>{new Date(descuento.fechaInicio).toLocaleDateString()}</td>
-                <td>{new Date(descuento.fechaFin).toLocaleDateString()}</td>
-                <td>{(descuento.porcentaje * 100).toFixed(0)}%</td>
-                <td>
-                  <button onClick={() => {
-                    setCurrentDescuento(descuento);
-                    setIsEditing(true);
-                  }}>
-                    Editar
-                  </button>
-                  <button onClick={() => handleDeleteDescuento(descuento.idDescuento)}>
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
-            ))}
-        </tbody>
-      </table>
-
+  
+      <div className="table-container">
+        <table className="table-auto w-full bg-white shadow-md rounded-lg">
+          <thead className="bg-gray-200">
+            <tr>
+              <th className="px-4 py-2">Código</th>
+              <th className="px-4 py-2">Fecha Inicio</th>
+              <th className="px-4 py-2">Fecha Fin</th>
+              <th className="px-4 py-2">Porcentaje</th>
+              <th className="px-4 py-2">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {descuentos
+              .filter((d) =>
+                d.codigoDescuento.toLowerCase().includes(search.toLowerCase())
+              )
+              .map((descuento) => (
+                <tr key={descuento.idDescuento} className="border-t">
+                  <td className="px-4 py-2">{descuento.codigoDescuento}</td>
+                  <td className="px-4 py-2">
+                    {new Date(descuento.fechaInicio).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-2">
+                    {new Date(descuento.fechaFin).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-2">
+                    {(descuento.porcentaje * 100).toFixed(0)}%
+                  </td>
+                  <td className="px-4 py-2">
+                    <button
+                      className="btn-edit"
+                      onClick={() => {
+                        setCurrentDescuento(descuento);
+                        setIsEditing(true);
+                      }}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      className="btn-delete"
+                      onClick={() => handleDeleteDescuento(descuento.idDescuento)}
+                    >
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </div>
+  
       {isAdding && (
         <AgregarDescuento
           onClose={() => setIsAdding(false)}
           onAddDescuento={handleAddDescuento}
         />
       )}
-
+  
       {isEditing && currentDescuento && (
         <EditarDescuento
           descuento={currentDescuento}

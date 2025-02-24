@@ -51,7 +51,7 @@ const Header = ({ setSearchTerm }) => {
       {/* Menú y carrito */}
       <div className="menu-cartUS flex-1 flex justify-end space-x-4">
         <Link to="/user">
-          <button className="menu-btnUS text-white font-bold">Menú</button>
+          <button className="menu-btnUS text-white font-bold">Inicio</button>
         </Link>
 
         {/* Botón Carrito */}

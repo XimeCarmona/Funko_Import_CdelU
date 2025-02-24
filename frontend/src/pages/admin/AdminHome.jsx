@@ -37,13 +37,6 @@ function AdminHome() {
             <p>{data.clientes_activos}</p>
           </div>
         </div>
-        <div className="row">
-          <div className="card purple">
-            <FaTrophy className="card-icon" />
-            <h2>Producto MÃ¡s Vendido</h2>
-            <p>{data.producto_mas_vendido}</p>
-          </div>
-        </div>
       </div>
     </div>
   );

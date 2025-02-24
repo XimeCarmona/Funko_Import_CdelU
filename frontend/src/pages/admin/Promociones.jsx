@@ -121,51 +121,66 @@ function Promociones() {
 
   return (
     <div className="main-content">
-      <h2>Gestión de Promociones</h2>
-      
+      <h2 className="title-promociones">Gestión de Promociones</h2>
+  
       <div className="search-and-add-container">
         <input
           type="text"
+          className="search-bar"
           placeholder="Buscar por producto"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <button onClick={() => setIsAdding(true)}>Nueva Promoción</button>
+        <button className="btn-add-promocion" onClick={() => setIsAdding(true)}>
+          Agregar Promoción
+        </button>
       </div>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Producto</th>
-            <th>Porcentaje</th>
-            <th>Inicio</th>
-            <th>Fin</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {promociones
-            .filter(promo => 
+  
+      <div className="table-container">
+        <table className="table-auto w-full bg-white shadow-md rounded-lg">
+          <thead className="bg-gray-200">
+            <tr>
+              <th className="px-4 py-2">Producto</th>
+              <th className="px-4 py-2">Porcentaje</th>
+              <th className="px-4 py-2">Inicio</th>
+              <th className="px-4 py-2">Fin</th>
+              <th className="px-4 py-2">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {promociones
+              .filter((promo) =>
                 promo.producto?.toLowerCase().includes(search.toLowerCase())
-            )
-            .map(promo => (
-                <tr key={promo.id_promocion}>
-                  <td>{promo.producto || 'N/A'}</td>
-                  <td>{Math.round(promo.porcentaje * 100)}%</td>
-                  <td>{formatDate(promo.fecha_inicio)}</td>
-                  <td>{formatDate(promo.fecha_fin)}</td>
-                <td>
-                  <button onClick={() => {
-                    setCurrentPromocion(promo);
-                    setIsEditing(true);
-                  }}>Editar</button>
-                  <button onClick={() => handleDeletePromocion(promo.id_promocion)}>Eliminar</button>
-                </td>
-              </tr>
-            ))}
-        </tbody>
-      </table>
-
+              )
+              .map((promo) => (
+                <tr key={promo.id_promocion} className="border-t">
+                  <td className="px-4 py-2">{promo.producto || "N/A"}</td>
+                  <td className="px-4 py-2">{Math.round(promo.porcentaje * 100)}%</td>
+                  <td className="px-4 py-2">{formatDate(promo.fecha_inicio)}</td>
+                  <td className="px-4 py-2">{formatDate(promo.fecha_fin)}</td>
+                  <td className="px-4 py-2">
+                    <button
+                      className="btn-edit"
+                      onClick={() => {
+                        setCurrentPromocion(promo);
+                        setIsEditing(true);
+                      }}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      className="btn-delete"
+                      onClick={() => handleDeletePromocion(promo.id_promocion)}
+                    >
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </div>
+  
       {isAdding && (
         <AgregarPromocion
           productos={productos}
@@ -173,7 +188,7 @@ function Promociones() {
           onSave={handleAddPromocion}
         />
       )}
-
+  
       {isEditing && currentPromocion && (
         <EditarPromocion
           promocion={currentPromocion}
