@@ -14,6 +14,7 @@ import Edicion from "./pages/admin/Edicion";
 import Perfil from "./pages/admin/AdPerfil";
 import Descuentos from "./pages/admin/Descuentos";
 import Promociones from "./pages/admin/Promociones";
+import VentasAdmin from "./pages/admin/VentasAdmin";
 
 // User
 import UserHome from "./pages/user/UserHome";
@@ -52,6 +53,8 @@ function App() {
           <Route path="descuento" element={<Descuentos />} />
           <Route path="promocion" element={<Promociones />} />
           <Route path="*" element={<Navigate to="/admin" />} />
+          <Route path="/admin/ventas" element={<VentasAdmin />} />
+
         </Route>
 
         {/* Rutas del Usuario */}
