@@ -937,37 +937,40 @@ def payment_success(request):
 
 @api_view(['GET'])
 def get_ventas(request):
+    admin = request.query_params.get('admin')  # Nuevo parámetro para verificar si es admin
     user_email = request.query_params.get('email')
-    if not user_email:
-        return Response({"error": "Correo electrónico no proporcionado"}, status=400)
 
-    try:
-        usuario = Usuario.objects.get(correo=user_email)
-    except Usuario.DoesNotExist:
-        return Response({"error": "Usuario no encontrado"}, status=404)
+    if not admin:  # Si no es admin, debe filtrar por usuario
+        if not user_email:
+            return Response({"error": "Correo electrónico no proporcionado"}, status=400)
 
-    ventas = Venta.objects.filter(usuario=usuario)
-    
+        try:
+            usuario = Usuario.objects.get(correo=user_email)
+        except Usuario.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=404)
+
+        ventas = Venta.objects.filter(usuario=usuario)
+    else:
+        ventas = Venta.objects.all()  # Si es admin, obtiene todas las ventas
+
     ventas_con_productos = []
     for venta in ventas:
         detalles = DetalleVenta.objects.filter(venta=venta)
         productos = []
         for detalle in detalles:
-            print("Detalle:", detalle)  # Depuración
-            print("Producto:", detalle.producto)  # Depuración
             productos.append({
-                'id': detalle.producto.idProducto,  # Usar idProducto en lugar de id
+                'id': detalle.producto.idProducto,
                 'nombre': detalle.producto.nombre,
                 'cantidad': detalle.cantidad,
                 'precio_unitario': detalle.precio_unitario,
                 'total': detalle.total,
             })
-        venta_con_detalles = {
+        ventas_con_productos.append({
             'id': venta.id,
+            'usuario': venta.usuario.correo,  # Muestra el usuario en la vista de admin
             'fecha_venta': venta.fecha_venta,
             'total': venta.total,
             'productos': productos,
-        }
-        ventas_con_productos.append(venta_con_detalles)
-    
+        })
+
     return Response(ventas_con_productos)

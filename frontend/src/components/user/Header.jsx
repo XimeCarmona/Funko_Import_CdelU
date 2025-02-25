@@ -71,41 +71,42 @@ const Header = ({ setSearchTerm }) => {
         </Link>
 
         {/* Ícono de usuario con menú desplegable */}
-        <div
-          className="relative"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
-          <button className="user-iconUS text-white font-bold">
-            <i className="fas fa-user"></i> registrado
-          </button>
+<div
+  className="relative"
+  onMouseEnter={handleMouseEnter}
+  onMouseLeave={handleMouseLeave}
+>
+  <button className="user-iconUS text-white font-bold">
+    <i className="fas fa-user"></i> {isUserLoggedIn ? localStorage.getItem("userEmail") : "Iniciar sesión"}
+  </button>
 
-          {isDropdownOpen && (
-            <div className="dropdown-menuUS">
-              {isUserLoggedIn && (
-                <Link to="/user/perfil" className="dropdown-itemUS">
-                  Mi Perfil
-                </Link>
-              )}
+  {isDropdownOpen && (
+    <div className="dropdown-menuUS">
+      {isUserLoggedIn && (
+        <Link to="/user/perfil" className="dropdown-itemUS">
+          Mi Perfil
+        </Link>
+      )}
 
-              {isUserLoggedIn && (
-                <Link to="/user/MisCompras" className="dropdown-itemUS">
-                  Mis Compras
-                </Link>
-              )}
+      {isUserLoggedIn && (
+        <Link to="/user/miscompras" className="dropdown-itemUS">
+          Mis Compras
+        </Link>
+      )}
 
-              {isUserLoggedIn ? (
-                <button onClick={handleLogout} className="dropdown-itemUS">
-                  Cerrar Sesión
-                </button>
-              ) : (
-                <Link to="/login" className="dropdown-itemUS">
-                  Iniciar Sesión
-                </Link>
-              )}
-            </div>
-          )}
-        </div>
+      {isUserLoggedIn ? (
+        <button onClick={handleLogout} className="dropdown-itemUS">
+          Cerrar Sesión
+        </button>
+      ) : (
+        <Link to="/login" className="dropdown-itemUS">
+          Iniciar Sesión
+        </Link>
+      )}
+    </div>
+  )}
+</div>
+
       </div>
     </header>
   );
