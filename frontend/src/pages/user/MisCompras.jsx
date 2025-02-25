@@ -1,39 +1,34 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios"; // Para hacer las peticiones HTTP
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import "../../App.css"; // Importa el archivo CSS
 
 const MisCompras = () => {
-  const [ventas, setVentas] = useState([]); // Estado para almacenar las ventas
-  const [loading, setLoading] = useState(true); // Estado de carga
-  const [error, setError] = useState(null); // Estado de error
+  const [ventas, setVentas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Obtener el correo electrónico del usuario desde el localStorage
     const userEmail = localStorage.getItem("userEmail");
     if (!userEmail) {
-      navigate("/login"); // Si no hay correo, redirigir a login
+      navigate("/login");
       return;
     }
 
-    // Hacer la petición al backend para obtener las ventas
     const fetchVentas = async () => {
       try {
         const response = await axios.get("http://127.0.0.1:8000/api/auth/get-ventas/", {
-          params: {
-            email: userEmail, // Enviar el correo como parámetro
-          },
+          params: { email: userEmail },
         });
-        setVentas(response.data); // Establecer las ventas obtenidas
-        setLoading(false); // Actualizar estado de carga
+        setVentas(response.data);
+        setLoading(false);
       } catch (err) {
         console.error("Error al cargar las ventas:", err);
         setError("Error al cargar las ventas.");
-        setLoading(false); // Dejar de cargar en caso de error
-
-        // Si el error es 401, redirigir al usuario a la página de inicio de sesión
+        setLoading(false);
         if (err.response && err.response.status === 401) {
-          navigate("/login"); // Redirigir al usuario a la página de inicio de sesión
+          navigate("/login");
         }
       }
     };
@@ -41,29 +36,24 @@ const MisCompras = () => {
     fetchVentas();
   }, [navigate]);
 
-  if (loading) {
-    return <div>Cargando...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
+  if (loading) return <div className="mis-compras-container">Cargando...</div>;
+  if (error) return <div className="mis-compras-container error">{error}</div>;
 
   return (
-    <div className="mis-compras">
-      <h1>Mis Compras</h1>
+    <div className="mis-compras-container">
+      <h1 className="mis-compras-title">Mis Compras</h1>
 
       {ventas.length > 0 ? (
         <ul>
           {ventas.map((venta) => (
-            <li key={venta.id}>
+            <li key={venta.id} className="venta-card">
               <h2>Venta ID: {venta.id}</h2>
               <p>Fecha de compra: {new Date(venta.fecha_venta).toLocaleDateString()}</p>
               <p>Total: ${venta.total}</p>
               <h3>Productos:</h3>
-              <ul>
+              <ul className="producto-list">
                 {venta.productos.map((producto) => (
-                  <li key={producto.id}>
+                  <li key={producto.id} className="producto-item">
                     <p>Producto: {producto.nombre}</p>
                     <p>Cantidad: {producto.cantidad}</p>
                     <p>Precio unitario: ${producto.precio_unitario}</p>
@@ -77,6 +67,10 @@ const MisCompras = () => {
       ) : (
         <p>No tienes compras realizadas.</p>
       )}
+
+      <button onClick={() => navigate("/user")} className="volver-btn">
+        Volver al inicio
+      </button>
     </div>
   );
 };
