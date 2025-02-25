@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import AgregarProducto from './AgregarProducto';
 import EditarProducto from './EditarProducto';
-import AgregarStock from './AgregarStock'; // Importa el nuevo componente
 
 function Productos() {
   const [search, setSearch] = useState('');
@@ -53,8 +52,6 @@ function Productos() {
     setIsEditing(true);
   };
 
-  const handleAddStockClick = () => setIsAddingStock(true); // Manejar el clic en el botón de agregar stock
-
   const closeModal = () => {
     setIsAdding(false);
     setIsEditing(false);
@@ -83,13 +80,33 @@ function Productos() {
 
   const saveEditedProduct = async (editedProduct) => {
     try {
-      await axios.put(`http://localhost:8000/api/productos/${editedProduct.idProducto}/`, editedProduct);
+      const formData = new FormData();
+      for (const key in editedProduct) {
+        if (editedProduct[key] !== null && editedProduct[key] !== undefined) {
+          formData.append(key, editedProduct[key]);
+        }
+      }
+  
+      const response = await axios.put(
+        `http://localhost:8000/api/productos/${editedProduct.idProducto}/`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+  
       await fetchProductos();
       closeModal();
     } catch (error) {
       console.error('Error al editar producto:', error);
+      console.error('Detalles del error:', error.response?.data);
+      alert(`Error al editar: ${JSON.stringify(error.response?.data)}`);
     }
   };
+  
+  
 
   const handleDeleteProduct = async (id) => {
     if (!window.confirm('¿Estás seguro de eliminar este producto?')) return;
@@ -126,9 +143,7 @@ function Productos() {
         <button className="btn-add-product" onClick={handleAddProductClick}>
           Agregar Producto
         </button>
-        <button className="btn-add-stock" onClick={handleAddStockClick}>
-          Agregar Stock
-        </button>
+
       </div>
 
       <div className="table-container">

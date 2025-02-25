@@ -361,6 +361,38 @@ class CodigoSeguimiento(models.Model): #?CRUD despues vemos
     def __str__(self):
         return f'Codigo Seguimiento {self.codigo} - {self.id_factura}'
 
-    
+class Venta(models.Model):
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='ventas')
+    fecha_venta = models.DateTimeField(auto_now_add=True)
+    total = models.DecimalField(max_digits=10, decimal_places=2)
+    descuento = models.ForeignKey('Descuento', on_delete=models.SET_NULL, null=True, blank=True)
+    estado = models.CharField(max_length=20, choices=[
+        ('pendiente', 'Pendiente'),
+        ('pagado', 'Pagado'),
+        ('cancelado', 'Cancelado'),
+    ], default='pendiente')
+    payment_id = models.CharField(max_length=100, null=True, blank=True)  # Nuevo campo para payment_id
 
+    def aplicar_descuento(self):
+        """Aplica el descuento al total de la venta si es aplicable."""
+        if self.descuento:
+            descuento = (self.total * self.descuento.porcentaje) / 100
+            self.total -= descuento
+            self.save()
 
+    def __str__(self):
+        return f"Venta {self.id} - {self.usuario.correo} - {self.fecha_venta}"
+class DetalleVenta(models.Model):
+    venta = models.ForeignKey(Venta, on_delete=models.CASCADE, related_name='detalles')
+    producto = models.ForeignKey('Producto', on_delete=models.CASCADE)
+    cantidad = models.PositiveIntegerField()
+    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+    total = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def save(self, *args, **kwargs):
+        """Calcula el total por producto antes de guardar."""
+        self.total = self.precio_unitario * self.cantidad
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.producto.nombre} - Cantidad: {self.cantidad}"

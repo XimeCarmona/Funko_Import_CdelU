@@ -876,3 +876,50 @@ button {
 button:hover {
   background-color: #0056b3;
 }
+
+.dropdown-menuUS {
+  position: fixed; /* Fijado fuera del header */
+  top: 80px; /* Ajusta la posición */
+  right: 20px; /* Alineado a la derecha */
+  width: 180px;
+  background-color: white;
+  color: black;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 10px 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.dropdown-menuUS a,
+.dropdown-menuUS button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 16px;
+  text-decoration: none;
+  color: #333;
+  background: none;
+  border: none;
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+.dropdown-menuUS a:hover,
+.dropdown-menuUS button:hover {
+  background-color: #f0f0f0;
+}
+
+.user-iconUS {
+  cursor: pointer;
+  font-size: 1rem;
+  background: none;
+  border: none;
+}
+
+/* Mostrar el menú cuando esté activo */
+.relative:hover .dropdown-menuUS {
+  opacity: 1;
+  visibility: visible;
+}

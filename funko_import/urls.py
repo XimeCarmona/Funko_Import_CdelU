@@ -22,7 +22,7 @@ router.register(r'ingresostock', views.IngresoStockView, basename='ingresostock'
 urlpatterns = [
     path('', include(router.urls)),  # Rutas del router bajo el prefijo 'api/auth/'
     path('auth/google-login/', views.google_login, name='google_login'),  # Ahora estÃ¡ bajo 'api/auth/google-login/'
-    path("process_payment/", views.process_payment, name="process_payment"),
+    # path("process_payment/", views.process_payment, name="process_payment"),
     path('auth/completar-perfil/', views.completar_perfil, name='completar_perfil'),
     path('auth/user-data/', views.user_data, name='user_data'),
     path('auth/update-profile/', views.update_profile, name='update_profile'),
@@ -33,10 +33,12 @@ urlpatterns = [
     path('auth/add-to-cart/', views.add_to_cart, name='add_to_cart'),
     path('auth/obtener-carrito/', views.obtener_carrito, name='obtener_carrito'),
     path('auth/eliminar-producto-carrito/', views.eliminar_producto_carrito, name='eliminar_producto_carrito'),
-    path('auth/process_payment/', views.process_payment, name="process_payment"),
+    # path('auth/process_payment/', views.process_payment, name="process_payment"),
     path('auth/create-payment-preference/', views.create_payment_preference, name='create_payment_preference'),
     path('auth/obtener-preguntas-producto/<int:idProducto>/', views.obtener_preguntas_producto, name='obtener_preguntas_producto'),
     path('auth/preguntas/', views.crear_pregunta, name='crear_pregunta'),
     path('auth/responder-pregunta/<int:idPregunta>/', views.responder_pregunta, name='responder_pregunta'),
-    path('auth/generar-factura/', views.generar_factura, name='generar_factura'),
-]
+    # path('auth/mis-compras/', views.mis_compras, name='mis_compras'),
+    path('auth/payment-success/', views.payment_success, name="payment_success"),
+    path('auth/get-ventas/', views.get_ventas, name="get_ventas"),
+    ]

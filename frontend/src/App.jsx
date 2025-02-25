@@ -25,6 +25,7 @@ import ShippingMethod from "./components/user/ShippingMethod";
 import PaymentMethod from "./components/user/PaymentMethod";
 import PaymentStatus from "./components/user/PaymentStatus";
 import DetalleFunko from "./components/user/DetalleFunko";
+import MisCompras from "./pages/user/MisCompras";
 
 
 function App() {
@@ -64,6 +65,7 @@ function App() {
           <Route path="payment" element={<PaymentMethod />} />
           <Route path="payment-status" element={<PaymentStatus />} />
           <Route path="detalle/:idProducto" element={<DetalleFunko />} />
+          <Route path="MisCompras" element={<MisCompras />} />
 
           {/* Rutas para manejar los estados de pago */}
           <Route path="success" element={<PaymentStatus status="success" />} />
