@@ -15,7 +15,7 @@ from django.db.models import Sum
 from django.conf import settings
 from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404
-from datetime import datetime
+from datetime import datetime, date
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from django.utils import timezone
@@ -246,7 +246,7 @@ def google_login(request):
             defaults={
                 "nombre": nombre,
                 "apellido": apellido,
-                "direccion": "",
+                "direccion":"",
                 "telefono": "",
                 "rol": False
             }
@@ -288,10 +288,7 @@ def completar_perfil(request):
         if not all([email, nombre, apellido, direccion, telefono]):
             return JsonResponse({"error": "Faltan datos obligatorios"}, status=400)
 
-        usuario = Usuario.objects.filter(correo=email).first()
-
-        if not usuario:
-            return JsonResponse({"error": "Usuario no encontrado"}, status=404)
+        usuario = get_object_or_404(Usuario, correo=email)  # Cambiamos filter().first() por get_object_or_404
 
         usuario.nombre = nombre
         usuario.apellido = apellido
@@ -309,6 +306,7 @@ def completar_perfil(request):
 
     except json.JSONDecodeError:
         return JsonResponse({"error": "Formato JSON inválido"}, status=400)
+
 
 @csrf_exempt
 def user_data(request):
@@ -638,10 +636,12 @@ def aplicar_descuento(request):
                 return JsonResponse({"success": False, "message": "El descuento ya fue aplicado a este carrito"}, status=400)
 
             # Verificar si la fecha de validez del descuento es correcta
-            if descuento.fechaInicio <= datetime.date.today() <= descuento.fechaFin:
+            if descuento.fechaInicio <= date.today() <= descuento.fechaFin:
                 # Calcular el nuevo total con el descuento aplicado
                 subtotal = carrito_usuario.calcular_total()
-                nuevo_total = subtotal * (1 - descuento.porcentaje)
+                print(f"Subtotal antes del descuento: {subtotal}")
+                nuevo_total = subtotal - (subtotal * descuento.porcentaje)  # Aquí está la corrección
+                print(f"Nuevo total después del descuento: {nuevo_total}")
                 carrito_usuario.total = nuevo_total
                 carrito_usuario.save()
 
@@ -937,37 +937,40 @@ def payment_success(request):
 
 @api_view(['GET'])
 def get_ventas(request):
+    admin = request.query_params.get('admin')  # Nuevo parámetro para verificar si es admin
     user_email = request.query_params.get('email')
-    if not user_email:
-        return Response({"error": "Correo electrónico no proporcionado"}, status=400)
 
-    try:
-        usuario = Usuario.objects.get(correo=user_email)
-    except Usuario.DoesNotExist:
-        return Response({"error": "Usuario no encontrado"}, status=404)
+    if not admin:  # Si no es admin, debe filtrar por usuario
+        if not user_email:
+            return Response({"error": "Correo electrónico no proporcionado"}, status=400)
 
-    ventas = Venta.objects.filter(usuario=usuario)
-    
+        try:
+            usuario = Usuario.objects.get(correo=user_email)
+        except Usuario.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=404)
+
+        ventas = Venta.objects.filter(usuario=usuario)
+    else:
+        ventas = Venta.objects.all()  # Si es admin, obtiene todas las ventas
+
     ventas_con_productos = []
     for venta in ventas:
         detalles = DetalleVenta.objects.filter(venta=venta)
         productos = []
         for detalle in detalles:
-            print("Detalle:", detalle)  # Depuración
-            print("Producto:", detalle.producto)  # Depuración
             productos.append({
-                'id': detalle.producto.idProducto,  # Usar idProducto en lugar de id
+                'id': detalle.producto.idProducto,
                 'nombre': detalle.producto.nombre,
                 'cantidad': detalle.cantidad,
                 'precio_unitario': detalle.precio_unitario,
                 'total': detalle.total,
             })
-        venta_con_detalles = {
+        ventas_con_productos.append({
             'id': venta.id,
+            'usuario': venta.usuario.correo,  # Muestra el usuario en la vista de admin
             'fecha_venta': venta.fecha_venta,
             'total': venta.total,
             'productos': productos,
-        }
-        ventas_con_productos.append(venta_con_detalles)
-    
+        })
+
     return Response(ventas_con_productos)

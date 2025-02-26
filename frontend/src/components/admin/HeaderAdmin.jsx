@@ -42,6 +42,7 @@ const HeaderAdmin = () => {
                 <li><Link to="edicion">Edición</Link></li>
                 <li><Link to="descuento">Descuentos</Link></li>
                 <li><Link to="promocion">Promociones</Link></li> 
+                <li><Link to="ventas">Ventas</Link></li>
               </ul>
             </div>
           )}
