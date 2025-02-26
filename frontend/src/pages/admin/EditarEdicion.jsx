@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
 
 function EditarEdicion({ edition, onCancel, onSave }) {
   const [nombre, setNombre] = useState(edition.nombre);
@@ -8,37 +9,40 @@ function EditarEdicion({ edition, onCancel, onSave }) {
     setNombre(edition.nombre);
   }, [edition]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSave = () => {
+    if (!nombre) {
+      Swal.fire({
+        title: "El nombre es obligatorio",
+        icon: "warning",
+        confirmButtonText: "OK"
+      });
+      return;
+    }
+
     const updatedEdition = { ...edition, nombre }; // Solo actualiza el nombre
     onSave(updatedEdition); // Pasa la edición editada a la función onSave
   };
 
   return (
-    <div className="modalAE">
-      <div className="modal-contentAE">
+    <div className="modal">
+      <div className="modal-content">
         <h3>Editar Edición</h3>
-        <form onSubmit={handleSubmit}>
-          <div className="blockAE">
-            <label htmlFor="nombre">Nombre</label>
+        
+        <div className="form-group">
+          <label>Nombre:
             <input
               type="text"
-              id="nombre"
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               required
             />
-          </div>
+          </label>
+        </div>
 
-          <div className="modal-actionsAE">
-            <button type="button" className="btn-cancelAE" onClick={onCancel}>
-              Cancelar
-            </button>
-            <button type="submit" className="btn-saveAE">
-              Guardar
-            </button>
-          </div>
-        </form>
+        <div className="modal-actions">
+          <button onClick={onCancel}>Cancelar</button>
+          <button onClick={handleSave}>Guardar</button>
+        </div>
       </div>
     </div>
   );

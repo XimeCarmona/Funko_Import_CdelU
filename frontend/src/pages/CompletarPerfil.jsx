@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import '../App.css';
+import Swal from 'sweetalert2';
 
 const CompletarPerfil = () => {
   const navigate = useNavigate();
@@ -47,6 +48,12 @@ const CompletarPerfil = () => {
       // Verifica el mensaje de éxito
       if (data.message === "Perfil actualizado correctamente") {
         // Redirigir al usuario después de completar su perfil
+        Swal.fire({
+          title: "Perfil actualizado correctamente",
+          icon: "success",
+          confirmButtonText: "OK",
+          timer:1500
+        });
         navigate("/user");
       } else {
         throw new Error("Error inesperado al completar el perfil");
@@ -54,7 +61,12 @@ const CompletarPerfil = () => {
 
     } catch (error) {
       console.error("Error:", error);
-      alert(error.message); // Muestra el error al usuario
+      Swal.fire({
+        title: "Error",
+        text: error.message,
+        icon: "error",
+        confirmButtonText: "OK"
+      });
     }
   };
 

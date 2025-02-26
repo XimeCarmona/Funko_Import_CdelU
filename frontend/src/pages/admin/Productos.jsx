@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import AgregarProducto from './AgregarProducto';
 import EditarProducto from './EditarProducto';
+import Swal from 'sweetalert2';
 
 function Productos() {
   const [search, setSearch] = useState('');
@@ -70,11 +71,21 @@ function Productos() {
       if (response.status === 201) {
         await fetchProductos();
         closeModal();
-        alert('Producto creado exitosamente!');
+        Swal.fire({
+          title: "Producto creado exitosamente",
+          icon: "success",
+          confirmButtonText: "OK",
+          timer: 1500
+        });
       }
     } catch (error) {
       console.error('Error detallado:', error.response?.data);
-      alert(`Error: ${error.response?.data?.detail || 'Error al crear producto'}`);
+      Swal.fire({
+        title: "Error",
+        text: error.response?.data?.detail || 'Error al crear producto',
+        icon: "error",
+        confirmButtonText: "Aceptar"
+      });
     }
   };
 
@@ -99,24 +110,53 @@ function Productos() {
   
       await fetchProductos();
       closeModal();
+      Swal.fire({
+        title: "Producto actualizado correctamente",
+        icon: "success",
+        confirmButtonText: "OK",
+        timer: 1500
+      });
     } catch (error) {
       console.error('Error al editar producto:', error);
       console.error('Detalles del error:', error.response?.data);
-      alert(`Error al editar: ${JSON.stringify(error.response?.data)}`);
+      Swal.fire({
+        title: "Error",
+        text: JSON.stringify(error.response?.data),
+        icon: "error",
+        confirmButtonText: "OK"
+      });
     }
   };
-  
-  
 
   const handleDeleteProduct = async (id) => {
-    if (!window.confirm('¿Estás seguro de eliminar este producto?')) return;
-    
-    try {
-      await axios.delete(`http://localhost:8000/api/productos/${id}/`);
-      setProductos(productos.filter(producto => producto.idProducto !== id));
-    } catch (error) {
-      console.error('Error al eliminar producto:', error);
-      alert('Error al eliminar el producto');
+    const result = await Swal.fire({
+      title: "¿Estás seguro?",
+      text: "No podrás revertir esta acción",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(`http://localhost:8000/api/productos/${id}/`);
+        setProductos(productos.filter(producto => producto.idProducto !== id));
+        Swal.fire({
+          title: "Producto eliminado",
+          icon: "success",
+          confirmButtonText: "OK",
+          timer: 1500
+        });
+      } catch (error) {
+        console.error('Error al eliminar producto:', error);
+        Swal.fire({
+          title: "Error",
+          text: "Error al eliminar el producto",
+          icon: "error",
+          confirmButtonText: "OK"
+        });
+      }
     }
   };
 
@@ -143,7 +183,6 @@ function Productos() {
         <button className="btn-add-product" onClick={handleAddProductClick}>
           Agregar Producto
         </button>
-
       </div>
 
       <div className="table-container">

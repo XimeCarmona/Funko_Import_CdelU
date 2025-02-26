@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Swal from 'sweetalert2';
 
 function AgregarDescuento({ onClose, onAddDescuento }) {
   const [newDescuento, setNewDescuento] = useState({
@@ -9,12 +10,20 @@ function AgregarDescuento({ onClose, onAddDescuento }) {
 
   const handleSave = () => {
     if (!newDescuento.fechaInicio || !newDescuento.fechaFin) {
-      alert('Ambas fechas son obligatorias');
+      Swal.fire({
+        title: "Ambas fechas son obligatorias",
+        icon: "warning",
+        confirmButtonText: "OK"
+      });
       return;
     }
     
     if (new Date(newDescuento.fechaFin) < new Date(newDescuento.fechaInicio)) {
-      alert('La fecha fin no puede ser anterior a la fecha inicio');
+      Swal.fire({
+        title: "La fecha fin no puede ser anterior a la fecha inicio",
+        icon: "error",
+        confirmButtonText: "OK"
+      });
       return;
     }
     
@@ -59,8 +68,8 @@ function AgregarDescuento({ onClose, onAddDescuento }) {
           </label>
         </div>
         <div className="modal-actions">
-          <button onClick={onClose}>Cancelar</button>
-          <button onClick={handleSave}>Guardar</button>
+          <button className="boton-cancel" onClick={onClose}>Cancelar</button>
+          <button className="boton-save" onClick={handleSave}>Guardar</button>
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import AgregarPromocion from './AgregarPromocion';
 import EditarPromocion from './EditarPromocion';
+import Swal from 'sweetalert2';
 
 function Promociones() {
   const [search, setSearch] = useState('');
@@ -60,9 +61,20 @@ function Promociones() {
       
       setPromociones(prev => [...prev, ...nuevasPromociones]);
       setIsAdding(false);
+      Swal.fire({
+        title: "Promoción agregada exitosamente",
+        icon: "success",
+        confirmButtonText: "OK",
+        timer: 1500
+      });
     } catch (err) {
       console.error('Error agregando promoción:', err);
-      alert('Error al guardar. Verifica los datos.');
+      Swal.fire({
+        title: "Error",
+        text: "Error al guardar. Verifica los datos.",
+        icon: "error",
+        confirmButtonText: "OK"
+      });
     }
   };
 
@@ -89,6 +101,12 @@ function Promociones() {
         prev.map(p => p.id_promocion === updatedPromo.id_promocion ? promocionActualizada : p)
       );
       setIsEditing(false);
+      Swal.fire({
+        title: "Promoción actualizada exitosamente",
+        icon: "success",
+        confirmButtonText: "OK",
+        timer: 1500
+      });
     } catch (err) {
       const errorDetails = err.response?.data;
       console.error('Error completo:', errorDetails);
@@ -98,16 +116,44 @@ function Promociones() {
         errorDetails?.non_field_errors?.[0] ||
         'Error al guardar. Verifica los datos';
       
-      alert(`Error: ${errorMessage}`);
+      Swal.fire({
+        title: "Error",
+        text: errorMessage,
+        icon: "error",
+        confirmButtonText: "OK"
+      });
     }
   };
 
   const handleDeletePromocion = async (id) => {
-    try {
-      await axios.delete(`http://localhost:8000/api/promociones/${id}/`);
-      setPromociones(prev => prev.filter(p => p.id_promocion !== id));
-    } catch (err) {
-      console.error('Error eliminando:', err);
+    const result = await Swal.fire({
+      title: "¿Estás seguro?",
+      text: "No podrás revertir esta acción",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Eliminar",
+      cancelButtonText: "Cancelar",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(`http://localhost:8000/api/promociones/${id}/`);
+        setPromociones(prev => prev.filter(p => p.id_promocion !== id));
+        Swal.fire({
+          title: "Promoción eliminada",
+          icon: "success",
+          confirmButtonText: "OK",
+          timer: 1500
+        });
+      } catch (err) {
+        console.error('Error eliminando:', err);
+        Swal.fire({
+          title: "Error",
+          text: "Error al eliminar la promoción",
+          icon: "error",
+          confirmButtonText: "OK"
+        });
+      }
     }
   };
 

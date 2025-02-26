@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Swal from 'sweetalert2';
 
 function AgregarEdicion({ onCancel, onSave }) {
   const [newEdition, setNewEdition] = useState({
@@ -7,33 +8,38 @@ function AgregarEdicion({ onCancel, onSave }) {
 
   const handleSave = () => {
     if (newEdition.nombre.trim() === '') {
-      alert('El nombre de la edición es obligatorio.');
+      Swal.fire({
+        title: "El nombre de la edición es obligatorio",
+        icon: "warning",
+        confirmButtonText: "OK"
+      });
       return;
     }
     onSave(newEdition); // Enviamos solo el nombre
   };
 
   return (
-    <div className="modalAE">
-      <div className="modal-contentAE">
+    <div className="modal">
+      <div className="modal-content">
         <h3>Agregar Nueva Edición</h3>
-        <label className="blockAE my-2">
-          Nombre:
-          <input
-            type="text"
-            placeholder="Ingrese nombre de la edición"
-            className="input-fieldAE"
-            value={newEdition.nombre}
-            onChange={(e) =>
-              setNewEdition({ ...newEdition, nombre: e.target.value })
-            }
-          />
-        </label>
-        <div className="modal-actionsAE">
-          <button className="btn-cancelAE" onClick={onCancel}>
+        <div className="form-group">
+          <label>
+            Nombre:
+            <input
+              type="text"
+              placeholder="Ingrese nombre de la edición"
+              value={newEdition.nombre}
+              onChange={(e) =>
+                setNewEdition({ ...newEdition, nombre: e.target.value })
+              }
+            />
+          </label>
+        </div>
+        <div className="modal-actions">
+          <button className="btn-cancel" onClick={onCancel}>
             Cancelar
           </button>
-          <button className="btn-saveAE" onClick={handleSave}>
+          <button className="btn-save" onClick={handleSave}>
             Guardar
           </button>
         </div>

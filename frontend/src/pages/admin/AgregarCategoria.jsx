@@ -1,22 +1,27 @@
 import React, { useState } from 'react';
+import Swal from 'sweetalert2';
 
 function AgregarCategoria({ onClose, onAddCategory }) {
-  const [newCategory, setNewCategory] = useState({ nombre: ''});
+  const [newCategory, setNewCategory] = useState({ nombre: '' });
 
   const handleSave = () => {
     if (newCategory.nombre.trim() === '') {
-      alert('El nombre de la categoría es obligatorio.');
+      Swal.fire({
+        title: "El nombre de la categoría es obligatorio",
+        icon: "warning",
+        confirmButtonText: "OK"
+      });
       return;
     }
     onAddCategory(newCategory);
-    setNewCategory({ nombre: ''});
+    setNewCategory({ nombre: '' });
     onClose();
   };
 
   return (
     <div className="modalAC">
       <div className="modal-contentAC">
-        <h3>Agregar Nueva Categoría</h3>
+        <h3>Agregar nueva categoría</h3>
         <div className="blockAC">
           <label>
             Nombre de la Categoría:

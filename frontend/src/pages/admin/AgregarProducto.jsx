@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
 
 function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones = [] }) {
   const [newProduct, setNewProduct] = useState({
@@ -38,7 +39,11 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
   const handleAddProduct = () => {
     // Validación de campos obligatorios
     if (!newProduct.nombre || newProduct.precio <= 0 || newProduct.cantidadDisp < 0 || !newProduct.idColeccion) {
-      alert('Por favor complete todos los campos obligatorios (*)');
+      Swal.fire({
+        title: "Por favor complete todos los campos obligatorios (*)",
+        icon: "warning",
+        confirmButtonText: "OK"
+      });
       return;
     }
 
@@ -62,24 +67,22 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
   };
 
   return (
-    <div className="modalAP fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
-      <div className="modal-contentAP bg-white p-6 rounded-lg shadow-xl w-[600px]">
-        <h3 className="text-xl font-semibold mb-4">Agregar Nuevo Producto</h3>
-        <div className="form-gridAP grid gap-4 grid-cols-2">
+    <div className="modal">
+      <div className="modal-content">
+        <h3>Agregar Nuevo Producto</h3>
+        <div className="form-grid">
           <label className="block">
-            <span className="text-gray-700">Imagen del Producto:</span>
+            <span>Imagen del Producto:</span>
             <input
               type="file"
-              className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
-              onChange={handleFileChange}  // Usamos la función que guarda el objeto File
+              onChange={handleFileChange}
             />
           </label>
           
           <label className="block">
-            <span className="text-gray-700">Nombre del Producto:*</span>
+            <span>Nombre del Producto:*</span>
             <input
               type="text"
-              className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
               placeholder="Ingrese nombre del producto"
               value={newProduct.nombre}
               onChange={(e) => setNewProduct({ ...newProduct, nombre: e.target.value })}
@@ -88,10 +91,9 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
           </label>
 
           <label className="block">
-            <span className="text-gray-700">Número en Colección:</span>
+            <span>Número en Colección:</span>
             <input
               type="number"
-              className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
               min="1"
               value={newProduct.numero}
               onChange={(e) => setNewProduct({ ...newProduct, numero: parseInt(e.target.value) || 1 })}
@@ -99,25 +101,23 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
           </label>
 
           <label className="block">
-            <span className="text-gray-700">Edición:</span>
+            <span>Edición:</span>
             <select
-                className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
-                value={newProduct.idEdicion} // Usar idEdicion en lugar de nombreEdicion
-                onChange={(e) => setNewProduct({ ...newProduct, idEdicion: e.target.value })}
-              >
-                <option value="">Seleccione edición</option>
-                {ediciones.map(edicion => (
-                  <option key={edicion.id_edicion} value={edicion.id_edicion}> {/* Enviar el ID */}
-                    {edicion.nombre}
-                  </option>
-                ))}
+              value={newProduct.idEdicion}
+              onChange={(e) => setNewProduct({ ...newProduct, idEdicion: e.target.value })}
+            >
+              <option value="">Seleccione edición</option>
+              {ediciones.map(edicion => (
+                <option key={edicion.id_edicion} value={edicion.id_edicion}>
+                  {edicion.nombre}
+                </option>
+              ))}
             </select>
           </label>
 
           <label className="block">
-            <span className="text-gray-700">Colección:*</span>
+            <span>Colección:*</span>
             <select
-              className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
               value={newProduct.idColeccion}
               onChange={(e) => setNewProduct({ ...newProduct, idColeccion: parseInt(e.target.value) })}
               required
@@ -131,9 +131,8 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
           </label>
 
           <label className="block">
-            <span className="text-gray-700">Edición Especial:</span>
+            <span>Edición Especial:</span>
             <select
-              className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
               value={newProduct.esEspecial ? 'si' : 'no'}
               onChange={(e) => setNewProduct({ ...newProduct, esEspecial: e.target.value === 'si' })}
             >
@@ -143,9 +142,8 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
           </label>
 
           <label className="block">
-            <span className="text-gray-700">Brilla en la oscuridad:</span>
+            <span>Brilla en la oscuridad:</span>
             <select
-              className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
               value={newProduct.brilla ? 'si' : 'no'}
               onChange={(e) => setNewProduct({ ...newProduct, brilla: e.target.value === 'si' })}
             >
@@ -155,10 +153,9 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
           </label>
 
           <label className="block">
-            <span className="text-gray-700">Stock:*</span>
+            <span>Stock:*</span>
             <input
               type="number"
-              className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
               min="0"
               value={newProduct.cantidadDisp}
               onChange={(e) => setNewProduct({ ...newProduct, cantidadDisp: parseInt(e.target.value) || 0 })}
@@ -167,9 +164,8 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
           </label>
 
           <label className="block col-span-2">
-            <span className="text-gray-700">Descripción:</span>
+            <span>Descripción:</span>
             <textarea
-              className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md h-24"
               placeholder="Ingrese descripción del producto"
               value={newProduct.descripcion}
               onChange={(e) => setNewProduct({ ...newProduct, descripcion: e.target.value })}
@@ -177,10 +173,9 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
           </label>
 
           <label className="block col-span-2">
-            <span className="text-gray-700">Precio:*</span>
+            <span>Precio:*</span>
             <input
               type="number"
-              className="mt-1 block w-full text-sm text-gray-700 border border-gray-300 rounded-md"
               min="0"
               step="0.01"
               value={newProduct.precio}
@@ -190,19 +185,11 @@ function AgregarProducto({ closeModal, onAddProduct, colecciones = [], ediciones
           </label>
         </div>
 
-        <div className="modal-actionsAP flex justify-end mt-4">
-          <button
-            className="btn-cancelAP text-sm text-gray-600 px-4 py-2 mr-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            onClick={closeModal}
-            type="button"
-          >
+        <div className="modal-actions">
+          <button className="btn-cancel" onClick={closeModal}>
             Cancelar
           </button>
-          <button
-            className="btn-saveAP text-white bg-blue-500 px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-            onClick={handleAddProduct}
-            type="button"
-          >
+          <button className="btn-save" onClick={handleAddProduct}>
             Guardar Producto
           </button>
         </div>

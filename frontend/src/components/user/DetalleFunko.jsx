@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import Swal from 'sweetalert2';
 
 function DetalleFunko() {
   const { idProducto } = useParams(); // Obtener el ID desde la URL
@@ -85,7 +86,12 @@ function DetalleFunko() {
 
   const handleAddToCart = async () => {
     if (!userEmail) {
-      alert("Por favor, inicia sesión para añadir productos al carrito");
+      Swal.fire({
+        title: "Por favor, inicia sesión para añadir productos al carrito",
+        icon: "warning",
+        confirmButtonText: "Ok",
+        timer: 1500
+      });
       return;
     }
 
@@ -104,20 +110,39 @@ function DetalleFunko() {
 
       const data = await respuesta.json();
       if (data.success) {
-        alert("Producto añadido al carrito");
+        Swal.fire({
+          title: "Producto añadido correctamente!",
+          icon: "success",
+          draggable: true,
+          timer: 1500
+        });
       } else {
-        alert(data.message || "Error al añadir producto");
+        Swal.fire({
+          title: data.message || "Error al añadir producto",
+          icon: "error",
+          confirmButtonText: "Ok",
+          timer: 1500
+        });
       }
     } catch (error) {
       console.error("Error al añadir al carrito:", error);
-      alert("Hubo un problema al añadir el producto");
+      Swal.fire({
+        title: "Hubo un problema al añadir el producto",
+        icon: "error",
+        confirmButtonText: "Ok",
+        timer: 1500
+      });
     }
   };
 
   const handleSubmitPregunta = async (e) => {
     e.preventDefault();
     if (!userEmail) {
-      alert("Por favor, inicia sesión para hacer una pregunta");
+      Swal.fire({
+        title: "Por favor, inicia sesión para hacer una pregunta",
+        icon: "warning",
+        confirmButtonText: "Ok"
+      });
       return;
     }
 
@@ -138,9 +163,18 @@ function DetalleFunko() {
         const data = await respuesta.json();
         setPreguntas([...preguntas, data.pregunta]);
         setNuevaPregunta("");
-        alert("Pregunta enviada correctamente");
+        Swal.fire({
+          title: "Pregunta enviada correctamente",
+          icon: "success",
+          confirmButtonText: "Ok",
+          timer: 1500
+        });
       } else {
-        alert("Error al enviar la pregunta");
+        Swal.fire({
+          title: "Error al enviar la pregunta",
+          icon: "error",
+          confirmButtonText: "Ok"
+        });
       }
     } catch (error) {
       console.error("Error al enviar la pregunta:", error);
@@ -150,7 +184,11 @@ function DetalleFunko() {
   const handleResponderPregunta = async (idPregunta) => {
     const respuesta = respuestaPregunta[idPregunta];
     if (!respuesta) {
-      alert("Por favor, escribe una respuesta");
+      Swal.fire({
+        title: "Por favor, escribe una respuesta",
+        icon: "warning",
+        confirmButtonText: "Ok",
+      });
       return;
     }
 
@@ -169,9 +207,18 @@ function DetalleFunko() {
         const data = await respuestaApi.json();
         setPreguntas(preguntas.map(p => p.id_pregunta === idPregunta ? data.pregunta : p));
         setRespuestaPregunta({ ...respuestaPregunta, [idPregunta]: "" });
-        alert("Respuesta enviada correctamente");
+        Swal.fire({
+          title: "Respuesta enviada correctamente",
+          icon: "success",
+          confirmButtonText: "Ok",
+          timer: 1500
+        });
       } else {
-        alert("Error al enviar la respuesta");
+        Swal.fire({
+          title: "Error al enviar la respuesta",
+          icon: "error",
+          confirmButtonText: "Ok"
+        });
       }
     } catch (error) {
       console.error("Error al enviar la respuesta:", error);
